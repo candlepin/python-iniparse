@@ -21,30 +21,36 @@ but = also me
         sio = StringIO(self.s1)
         p = inifile(sio)
         self.assertEqual(str(p), self.s1)
-        self.assertEqual(p.get('section1').get('but'), 'also me')
-        self.assertEqual(p.get('section1').get('help'), 'yourself')
-        self.assertEqual(p.get('section2').get('just'), 'kidding')
+        self.assertEqual(p.find('section1').find('but').value(), 'also me')
+        self.assertEqual(p.find('section1').find('help').value(), 'yourself')
+        self.assertEqual(p.find('section2').find('just').value(), 'kidding')
 
         itr = p.finditer('section1')
         v = itr.next()
-        self.assertEqual(v.get('help'), 'yourself')
-        self.assertEqual(v.get('but'), 'also me')
+        self.assertEqual(v.find('help').value(), 'yourself')
+        self.assertEqual(v.find('but').value(), 'also me')
         v = itr.next()
-        self.assertEqual(v.get('help'), 'me')
-        self.assertEqual(v.get('I\'m'), 'desperate')
+        self.assertEqual(v.find('help').value(), 'me')
+        self.assertEqual(v.find('I\'m').value(), 'desperate')
         self.assertRaises(StopIteration, itr.next)
 
-        self.assertRaises(KeyError, p.get, 'section')
-        self.assertRaises(KeyError, p.get('section2').get, 'ahem')
+        self.assertRaises(KeyError, p.find, 'section')
+        self.assertRaises(KeyError, p.find('section2').find, 'ahem')
 
-        self.assertEqual(p.lookup('section1.help'), 'yourself')
-        self.assertEqual(p.lookup('section1.but'), 'also me')
-        self.assertEqual(p.lookup('section1.I\'m'), 'desperate')
-        self.assertEqual(p.lookup('section2.just'), 'kidding')
+    def test_lookup(self):
+        sio = StringIO(self.s1)
+        p = inifile(sio)
+        self.assertEqual(p.lookup('section1.help').value(), 'yourself')
+        self.assertEqual(p.lookup('section1.but').value(), 'also me')
+        self.assertEqual(p.lookup('section1.I\'m').value(), 'desperate')
+        self.assertEqual(p.lookup('section2.just').value(), 'kidding')
 
         self.assertRaises(KeyError, p.lookup, 'section1.just')
         self.assertRaises(KeyError, p.lookup, 'section2.help')
 
+    def test_options(self):
+        sio = StringIO(self.s1)
+        p = inifile(sio)
         #self.assertEqual(p.options.section2.just, 'kidding')
 
     inv = (

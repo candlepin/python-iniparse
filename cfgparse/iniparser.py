@@ -27,7 +27,7 @@ class line_container(object):
             if hasattr(x, 'name') and x.name==key:
                 yield x
 
-    def get(self, key):
+    def find(self, key):
         for x in self.finditer(key):
             return x
         raise KeyError(key)
@@ -44,7 +44,7 @@ class line_container(object):
         for m in self.finditer(key):
             try:
                 if len(rest)==1:
-                    return m.get(rest[0])
+                    return m.find(rest[0])
                 else:
                     return m.lookup(rest)
             except KeyError:
@@ -57,9 +57,6 @@ class section(line_container):
         super(section, self).__init__()
         self.add(lineobj)
         self.name = lineobj.name
-
-    def get(self, key):
-        return super(section, self).get(key).value()
 
 class option(line_container):
     def __init__(self, lineobj):
