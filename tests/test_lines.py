@@ -76,7 +76,7 @@ class test_option_line(unittest.TestCase):
     def test_parsing(self):
         for l in self.lines:
             p = line_types.option_line.parse(l[0])
-            self.assertEqual(p.option, l[1])
+            self.assertEqual(p.name, l[1])
             self.assertEqual(p.separator, l[2])
             self.assertEqual(p.value, l[3])
             self.assertEqual(p.comment_separator, l[4])
@@ -129,7 +129,7 @@ class test_option_line(unittest.TestCase):
     def test_preserve_indentation(self):
         for l in self.indent_test_lines:
             p = line_types.option_line.parse(l[0])
-            p.option = l[1]
+            p.name = l[1]
             p.value = l[2]
             self.assertEqual(str(p), l[3])
 

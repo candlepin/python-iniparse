@@ -1,6 +1,6 @@
 import unittest
 from StringIO import StringIO
-from cfgparse import iniparser
+from cfgparse.iniparser import inifile
 
 class test_iniparser(unittest.TestCase):
     s1 = """
@@ -10,6 +10,10 @@ I'm  = desperate     ; really!
 
 [section2]
 just = kidding
+
+[section 1]
+help = yourself
+but = also me
 """
 
     def test_basic(self):
@@ -21,6 +25,50 @@ just = kidding
         self.assertEqual(p.get('section1').get('I\'m'), 'desperate')
         self.assertEqual(p['section2']['just'], 'kidding')
         self.assertEqual(p.options.section2.just, 'kidding')
+
+    inv = (
+("""
+# values must be in a section
+value = 5
+""",
+"""
+# values must be in a section
+#value = 5
+"""),
+("""
+# continuation lines only allowed after options
+[section]
+op1 = qwert
+    yuiop
+op2 = qwert
+
+    yuiop
+op3 = qwert
+# yup
+    yuiop
+
+[another section]
+    hmmm
+""",
+"""
+# continuation lines only allowed after options
+[section]
+op1 = qwert
+#    yuiop
+op2 = qwert
+
+#    yuiop
+op3 = qwert
+# yup
+#    yuiop
+
+[another section]
+#    hmmm
+"""))
+
+    def test_invalid(self):
+        for (org, mod) in self.inv:
+            self.assertEqual(str(inifile(StringIO(org))), mod)
 
 class suite(unittest.TestSuite):
     def __init__(self):

@@ -7,7 +7,7 @@ import re
 class line_type(object):
     line = None
 
-    def __init__(self, line):
+    def __init__(self, line=None):
         if line is not None:
             self.line = line.strip('\n')
 
@@ -62,10 +62,10 @@ class section_line(line_type):
     parse = classmethod(parse)
 
 class option_line(line_type):
-    def __init__(self, option, value, separator='=', comment=None,
+    def __init__(self, name, value, separator='=', comment=None,
                  comment_separator=None, comment_offset=-1, line=None):
         super(option_line, self).__init__(line)
-        self.option = option
+        self.name = name
         self.value = value
         self.separator = separator
         self.comment = comment
@@ -73,14 +73,14 @@ class option_line(line_type):
         self.comment_offset = comment_offset
 
     def to_string(self):
-        out = '%s %s %s' % (self.option, self.separator, self.value)
+        out = '%s %s %s' % (self.name, self.separator, self.value)
         if self.comment is not None:
             # try to preserve indentation of comments
             out = (out+' ').ljust(self.comment_offset)
             out = out + self.comment_separator + self.comment
         return out
 
-    regex = re.compile(r'^(?P<option>[^:=\s[][^:=]*)'
+    regex = re.compile(r'^(?P<name>[^:=\s[][^:=]*)'
                        r'\s*(?P<sep>[:=])\s*'
                        r'(?P<value>.*)$')
 
@@ -89,7 +89,7 @@ class option_line(line_type):
         if m is None:
             return None
 
-        option = m.group('option').rstrip()
+        name = m.group('name').rstrip()
         value = m.group('value')
         sep = m.group('sep')
 
@@ -115,7 +115,7 @@ class option_line(line_type):
             csep = None
             coff = -1
 
-        return cls(option, value, sep, comment, csep, coff, line)
+        return cls(name, value, sep, comment, csep, coff, line)
     parse = classmethod(parse)
 
 class comment_line(line_type):
