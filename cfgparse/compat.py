@@ -1,4 +1,5 @@
-# compatibility interfaces for ConfigParser
+"""Compatibility interfaces for ConfigParser
+"""
 
 import re
 from ConfigParser import DuplicateSectionError,    \

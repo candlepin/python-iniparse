@@ -1,3 +1,39 @@
+"""Access and/or modify INI files
+
+* Compatiable with ConfigParser
+* Preserves order of sections & options
+* Preserves comments/blank lines/etc
+* More conveninet access to data
+
+Example:
+
+    >>> from StringIO import StringIO
+    >>> sio = StringIO('''# configure foo-application
+    ... [foo]
+    ... bar1 = qualia
+    ... bar2 = 1977
+    ... [foo-ext]
+    ... special = 1
+    ... ''')
+
+    >>> cfg = ini_namespace(sio)
+    >>> print cfg.special
+    1
+    >>> print cfg.foo.bar1
+    qualia
+    >>> cfg.foo.newopt = 'hi!'
+
+    >>> print cfg
+    # configure foo-application
+    [foo]
+    bar1 = qualia
+    bar2 = 1977
+    newopt = hi!
+    [foo-ext]
+    special = 1
+
+"""
+
 # An iniparser that supports ordered sections/options
 # Also supports updates, while preserving structure
 # Backward-compatiable with ConfigParser
