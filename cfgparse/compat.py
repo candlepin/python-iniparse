@@ -1,7 +1,8 @@
 # compatibility interfaces for ConfigParser
 
+from ConfigParser import DuplicateSectionError, NoSectionError, NoOptionError
+
 import iniparser
-import ConfigParser
 
 class RawConfigParser(object):
     def __init__(self, defaults=None):
@@ -24,7 +25,7 @@ class RawConfigParser(object):
         already exists.
         """
         if self.has_section(section):
-            raise ConfigParser.DuplicateSectionError(section)
+            raise DuplicateSectionError(section)
         else:
             self.data._new_namespace(section)
 
@@ -41,10 +42,10 @@ class RawConfigParser(object):
 
     def options(self, section):
         """Return a list of option names for the given section name."""
-        if not self.has_section(section):
-            raise ConfigParser.NoSectionError(section)
-        else:
+        try:
             return list(self.data[section])
+        except KeyError:
+            raise NoSectionError(section)
 
     def read(self, filenames):
         """Read and parse a filename or a list of filenames.
@@ -77,21 +78,22 @@ class RawConfigParser(object):
         self.data.read(fp)
 
     def get(self, section, option):
-        if not self.has_section(section):
-            raise ConfigParser.NoSectionError(section)
-        elif not self.has_option(section, option):
-            raise ConfigParser.NoOptionError(option, section)
-        else:
+        try:
             return self.data[section][option]
+        except KeyError:
+            if not self.has_section(section):
+                raise NoSectionError(section)
+            else:
+                raise NoOptionError(option, section)
 
     def items(self, section):
-        if not self.has_section(section):
-            raise ConfigParser.NoSectionError(section)
-        else:
+        try:
             ans = []
             for opt in self.data[section]:
                 ans.append((opt, self.data[section][opt]))
             return ans
+        except KeyError:
+            raise NoSectionError(section)
 
     def getint(self, section, option):
         return int(self.get(section, option))
@@ -114,20 +116,22 @@ class RawConfigParser(object):
 
     def has_option(self, section, option):
         """Check for the existence of a given option in a given section."""
-        if not self.has_section(section):
-            raise ConfigParser.NoSectionError(section)
-        else:
-            try:
-                self.data[section][option]
-                return True
-            except KeyError:
-                return False
+        try:
+            sec = self.data[section]
+        except KeyError:
+            raise NoSectionError(section)
+        try:
+            sec[option]
+            return True
+        except KeyError:
+            return False
 
     def set(self, section, option, value):
         """Set an option."""
-        if not self.has_section(section):
-            raise ConfigParser.NoSectionError(section)
-        self.data[section][option] = value
+        try:
+            self.data[section][option] = value
+        except KeyError:
+            raise NoSectionError(section)
 
     def write(self, fp):
         """Write an .ini-format representation of the configuration state."""
@@ -135,12 +139,16 @@ class RawConfigParser(object):
 
     def remove_option(self, section, option):
         """Remove an option."""
-        if not self.has_section(section):
-            raise ConfigParser.NoSectionError(section)
-        if not self.has_option(section, option):
+        try:
+            sec = self.data[section]
+        except KeyError:
+            raise NoSectionError(section)
+        try:
+            sec[option]
+            del sec[option]
+            return 1
+        except KeyError:
             return 0
-        del self.data[section][option]
-        return 1
 
     def remove_section(self, section):
         """Remove a file section."""
@@ -148,4 +156,87 @@ class RawConfigParser(object):
             return False
         del self.data[section]
         return True
+
+
+class ConfigParser(RawConfigParser):
+
+    def get(self, section, option, raw=False, vars=None):
+        """Get an option value for a given section.
+
+        All % interpolations are expanded in the return values, based on the
+        defaults passed into the constructor, unless the optional argument
+        `raw' is true.  Additional substitutions may be provided using the
+        `vars' argument, which must be a dictionary whose contents overrides
+        any pre-existing defaults.
+
+        The section DEFAULT is special.
+        """
+        d = self._defaults.copy()
+        try:
+            d.update(self._sections[section])
+        except KeyError:
+            if section != DEFAULTSECT:
+                raise NoSectionError(section)
+        # Update with the entry specific variables
+        if vars is not None:
+            d.update(vars)
+        option = self.optionxform(option)
+        try:
+            value = d[option]
+        except KeyError:
+            raise NoOptionError(option, section)
+
+        if raw:
+            return value
+        else:
+            return self._interpolate(section, option, value, d)
+
+    def items(self, section, raw=False, vars=None):
+        """Return a list of tuples with (name, value) for each option
+        in the section.
+
+        All % interpolations are expanded in the return values, based on the
+        defaults passed into the constructor, unless the optional argument
+        `raw' is true.  Additional substitutions may be provided using the
+        `vars' argument, which must be a dictionary whose contents overrides
+        any pre-existing defaults.
+
+        The section DEFAULT is special.
+        """
+        d = self._defaults.copy()
+        try:
+            d.update(self._sections[section])
+        except KeyError:
+            if section != DEFAULTSECT:
+                raise NoSectionError(section)
+        # Update with the entry specific variables
+        if vars:
+            d.update(vars)
+        options = d.keys()
+        if "__name__" in options:
+            options.remove("__name__")
+        if raw:
+            return [(option, d[option])
+                    for option in options]
+        else:
+            return [(option, self._interpolate(section, option, d[option], d))
+                    for option in options]
+
+    def _interpolate(self, section, option, rawval, vars):
+        # do the string interpolation
+        value = rawval
+        depth = MAX_INTERPOLATION_DEPTH
+        while depth:                    # Loop through this until it's done
+            depth -= 1
+            if value.find("%(") != -1:
+                try:
+                    value = value % vars
+                except KeyError, e:
+                    raise InterpolationMissingOptionError(
+                        option, section, rawval, e[0])
+            else:
+                break
+        if value.find("%(") != -1:
+            raise InterpolationDepthError(option, section, rawval)
+        return value
 
