@@ -11,7 +11,7 @@ I'm  = desperate     ; really!
 [section2]
 just = kidding
 
-[section 1]
+[section1]
 help = yourself
 but = also me
 """
@@ -20,10 +20,14 @@ but = also me
         sio = StringIO(self.s1)
         p = inifile(sio)
         self.assertEqual(str(p), self.s1)
-        #self.assertEqual(p.get('section2').get('just'), 'kidding')
-        #self.assertEqual(p.get('section1').get('help'), 'me')
-        #self.assertEqual(p.get('section1').get('I\'m'), 'desperate')
-        #self.assertEqual(p['section2']['just'], 'kidding')
+        self.assertEqual(p.get('section2').get('just'), 'kidding')
+        self.assertEqual(p.get('section1').get('help'), 'yourself')
+        self.assertEqual(p.get('section1').get('I\'m'), 'desperate')
+        self.assertEqual(p.get('section2').get('just'), 'kidding')
+
+        self.assertRaises(KeyError, p.get, 'section')
+        self.assertRaises(KeyError, p.get('section2').get, 'ahem')
+
         #self.assertEqual(p.options.section2.just, 'kidding')
 
     inv = (

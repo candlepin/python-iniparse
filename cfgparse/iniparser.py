@@ -22,17 +22,48 @@ class line_container(object):
         s = [str(x) for x in self.contents]
         return '\n'.join(s)
 
+    def get(self, key):
+        matches = []
+        for x in self.contents[::-1]:
+            if hasattr(x, 'name') and x.name==key:
+                matches.append(x)
+
+        if not matches:
+            raise KeyError(key)
+        elif len(matches) == 1:
+            return matches[0]
+        else:
+            r = multiple_matches()
+            r.contents.extend(matches)
+            return r
+
+class multiple_matches(line_container):
+    def get(self, key):
+        for x in self.contents:
+            try:
+                return x.get(key)
+            except KeyError:
+                pass
+        raise KeyError(key)
+
+
 class section(line_container):
     def __init__(self, lineobj):
         super(section, self).__init__()
         self.add(lineobj)
         self.name = lineobj.name
 
+    def get(self, key):
+        return super(section, self).get(key).value()
+
 class option(line_container):
     def __init__(self, lineobj):
         super(option, self).__init__()
         self.add(lineobj)
         self.name = lineobj.name
+
+    def value(self):
+        return '\n'.join([x.value for x in self.contents])
 
 def make_comment(line):
     print_warning('can\'t parse "%s"' % line)
