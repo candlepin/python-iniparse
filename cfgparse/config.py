@@ -22,28 +22,36 @@ class namespace(object):
     def __init__(self, datasource):
         object.__setattr__(self, '_data', datasource)
 
+    def _new_value(self, name, data):
+        obj = self._data.create_value(name, data)
+        object.__setattr__(self, name, obj)
+        return obj
+
+    def _new_namespace(self, name):
+        obj = self._data.create_namespace(name)
+        object.__setattr__(self, name, obj)
+        return obj
+
     def __getattribute__(self, name):
         try:
             obj = object.__getattribute__(self, name)
+            if isinstance(obj, value):
+                return obj.get()
+            else:
+                return obj
         except AttributeError:
             return unknown(name, self)
 
-        if isinstance(obj, value):
-            return obj.get()
-        else:
-            return obj
 
     def __setattr__(self, name, data):
         try:
             obj = object.__getattribute__(self, name)
+            if isinstance(obj, value):
+                obj.set(data)
+            else:
+                object.__setattr__(self, name, data)
         except AttributeError:
-            obj = self._data.create_value(name, data)
-            return object.__setattr__(self, name, obj)
-
-        if isinstance(obj, value):
-            return obj.set(data)
-        else:
-            return object.__setattr__(self, name, data)
+            self._new_value(name, data)
 
 
 class unknown(object):
@@ -52,9 +60,8 @@ class unknown(object):
         object.__setattr__(self, 'namespace', namespace)
 
     def __setattr__(self, name, data):
-        obj = self.namespace._data.create_namespace(self.name)
-        object.__setattr__(self.namespace, self.name, obj)
-        return setattr(obj, name, data)
+        obj = self.namespace._new_namespace(self.name)
+        setattr(obj, name, data)
 
 
 class datasource(object):
