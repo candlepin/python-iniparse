@@ -16,8 +16,17 @@ class line_container(object):
             if isinstance(d, list): self.extend(d)
             else: self.add(d)
 
+    def add(self, x):
+        self.contents.append(x)
+
+    def extend(self, x):
+        for i in x: self.add(i)
+
     def get_name(self):
         return self.contents[0].name
+
+    def set_name(self, data):
+        self.contents[0].name = data
 
     def get_value(self):
         if len(self.contents) == 1:
@@ -25,14 +34,19 @@ class line_container(object):
         else:
             return '\n'.join([str(x.value) for x in self.contents])
 
-    name = property(get_name)
-    value = property(get_value)
+    def set_value(self, data):
+        lines = data.split('\n')
+        linediff = len(lines) - len(self.contents)
+        if linediff > 0:
+            for _ in range(linediff):
+                self.add(line_types.continuation_line(''))
+        elif linediff < 0:
+            self.contents = self.contents[:linediff]
+        for i,v in enumerate(lines):
+            self.contents[i].value = v
 
-    def add(self, x):
-        self.contents.append(x)
-
-    def extend(self, x):
-        for i in x: self.add(i)
+    name = property(get_name, set_name)
+    value = property(get_value, set_value)
 
     def __str__(self):
         s = [str(x) for x in self.contents]
@@ -59,8 +73,8 @@ class section(config.namespace):
         obj = line_container(line_types.option_line(name, ''))
         self.lineobj.add(obj)
         self.options[name] = opt = option(obj)
-        # we call opt.set() explicitly to avoid handling
-        # the case of data having multiple lines
+        # we call opt.set() explicitly to automatically
+        # handle the case of data having multiple lines
         opt.set(data)
         return opt
 
@@ -68,37 +82,29 @@ class section(config.namespace):
         raise Exception('No sub-sections allowed', name)
 
     def rename(self, oldname, newname):
-        raise NotImplementedError(oldname, newname)
+        self.options[oldname].name = newname
+        self.options[newname] = self.options[oldname]
+        del self.options[oldname]
 
     def delete(self, name):
-        raise NotImplementedError(name)
+        self.lineobj.contents.remove(self.options[name])
+        del self.options[name]
 
     def get(self, name):
         return self.options[name]
 
     def iterkeys(self):
-        return NotImplementedError()
+        return self.options.iterkeys()
 
 class option(config.value):
     def __init__(self, lineobj):
         self.lineobj = lineobj
 
     def get(self):
-        if len(self.lineobj.contents) == 1:
-            return self.lineobj.contents[0].value
-        else:
-            return '\n'.join([str(x.value) for x in self.lineobj.contents])
+        return self.lineobj.value
 
     def set(self, data):
-        lines = data.split('\n')
-        linediff = len(lines) - len(self.lineobj.contents)
-        if linediff > 0:
-            for _ in range(linediff):
-                self.lineobj.add(line_types.continuation_line(''))
-        elif linediff < 0:
-            self.lineobj.contents = self.lineobj.contents[:linediff]
-        for i,v in enumerate(lines):
-            self.lineobj.contents[i].value = v
+        self.lineobj.value = data
 
 def make_comment(line):
     print_warning('can\'t parse "%s"' % line)
@@ -125,16 +131,22 @@ class inifile(config.namespace):
         return ns
 
     def rename(self, oldname, newname):
-        raise NotImplementedError(oldname, newname)
+        self.sections[oldname].name = newname
+        self.sections[newname] = self.sections[oldname]
+        del self.sections[oldname]
 
     def delete(self, name):
-        raise NotImplementedError(name)
+        self.data.contents.remove(self.sections[name])
+        del self.sections[name]
 
     def get(self, name):
         return self.sections[name]
 
     def iterkeys(self):
-        return NotImplementedError()
+        return self.sections.iterkeys()
+
+    def __str__(self):
+        return str(self.data)
 
     line_types = [line_types.empty_line,
                   line_types.comment_line,

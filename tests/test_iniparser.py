@@ -21,7 +21,7 @@ but = also me
     def test_basic(self):
         sio = StringIO(self.s1)
         p = inifile(sio)
-        self.assertEqual(str(p.data), self.s1)
+        self.assertEqual(str(p), self.s1)
         self.assertEqual(p.data.find('section1').find('but').value, 'also me')
         self.assertEqual(p.data.find('section1').find('help').value, 'yourself')
         self.assertEqual(p.data.find('section2').find('just').value, 'kidding')
@@ -91,7 +91,7 @@ op3 = qwert
 
     def test_invalid(self):
         for (org, mod) in self.inv:
-            self.assertEqual(str(inifile(StringIO(org)).data), mod)
+            self.assertEqual(str(inifile(StringIO(org))), mod)
 
 class suite(unittest.TestSuite):
     def __init__(self):
