@@ -195,7 +195,7 @@ but = also me
 
     def test_basic(self):
         sio = StringIO(self.s1)
-        p = iniparser.inifile(sio)
+        p = iniparser.ini_namespace(sio)
         self.assertEqual(str(p), self.s1)
         self.assertEqual(p._data.find('section1').find('but').value, 'also me')
         self.assertEqual(p._data.find('section1').find('help').value, 'yourself')
@@ -215,7 +215,7 @@ but = also me
 
     def test_lookup(self):
         sio = StringIO(self.s1)
-        p = iniparser.inifile(sio)
+        p = iniparser.ini_namespace(sio)
         self.assertEqual(p.section1.help, 'yourself')
         self.assertEqual(p.section1.but, 'also me')
         self.assertEqual(getattr(p.section1, 'I\'m'), 'desperate')
@@ -226,14 +226,14 @@ but = also me
 
     def test_order(self):
         sio = StringIO(self.s1)
-        p = iniparser.inifile(sio)
+        p = iniparser.ini_namespace(sio)
         self.assertEqual(list(p), ['section1','section2'])
         self.assertEqual(list(p.section1), ['help', "i'm", 'but'])
         self.assertEqual(list(p.section2), ['just'])
 
     def test_delete(self):
         sio = StringIO(self.s1)
-        p = iniparser.inifile(sio)
+        p = iniparser.ini_namespace(sio)
         del p.section1.help
         self.assertEqual(list(p.section1), ["i'm", 'but'])
         self.assertEqual(str(p), """
@@ -307,7 +307,7 @@ op3 = qwert
 
     def test_invalid(self):
         for (org, mod) in self.inv:
-            ip = iniparser.inifile(StringIO(org), parse_exc=False)
+            ip = iniparser.ini_namespace(StringIO(org), parse_exc=False)
             self.assertEqual(str(ip), mod)
 
 

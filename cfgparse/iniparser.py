@@ -294,7 +294,7 @@ class section(config.namespace):
                     yield x
                     d.add(x)
 
-    def _new_namespace(self, name):
+    def new_namespace(self, name):
         raise Exception('No sub-sections allowed', name)
 
 
@@ -302,7 +302,7 @@ def make_comment(line):
     return comment_line(line.rstrip())
 
 
-class inifile(config.namespace):
+class ini_namespace(config.namespace):
     _data = None
     _sections = None
     _defaults = None
@@ -345,7 +345,7 @@ class inifile(config.namespace):
                     yield x.name
                     d.add(x.name)
 
-    def _new_namespace(self, name):
+    def new_namespace(self, name):
         if self._data.contents:
             self._data.add(empty_line())
         obj = line_container(section_line(name))

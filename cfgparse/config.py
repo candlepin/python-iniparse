@@ -18,7 +18,7 @@ class namespace(object):
     def __iter__(self):
         return NotImplementedError()
 
-    def _new_namespace(self, name):
+    def new_namespace(self, name):
         raise NotImplementedError(name)
 
     def __getattr__(self, name):
@@ -42,6 +42,19 @@ class namespace(object):
         except AttributeError:
             self.__delitem__(name)
 
+    def import_namespace(self, ns):
+        for name in ns:
+            value = ns[name]
+            if isinstance(value, namespace):
+                try:
+                    myns = self[name]
+                    if not isinstance(myns, namespace):
+                        raise TypeError('value-namespace conflict')
+                except KeyError:
+                    myns = self.new_namespace(name)
+                myns._import_ns(value)
+            else:
+                self[name] = value
 
 class unknown(object):
     def __init__(self, name, namespace):
@@ -49,7 +62,7 @@ class unknown(object):
         object.__setattr__(self, 'namespace', namespace)
 
     def __setattr__(self, name, value):
-        obj = self.namespace._new_namespace(self.name)
+        obj = self.namespace.new_namespace(self.name)
         obj[name] = value
 
 
@@ -59,34 +72,66 @@ class unknown(object):
 class basic_namespace(namespace):
     """Represents a collection of named values
 
+    Values are added using dotted notation:
+
     >>> n = basic_namespace()
     >>> n.x = 7
-    >>> n.x
-    7
     >>> n.name.first = 'paramjit'
     >>> n.name.last = 'oberoi'
-    >>> isinstance(n.name, namespace)
-    True
+
+    ...and accessed the same way:
+
+    >>> n.x
+    7
     >>> n.name.first
     'paramjit'
     >>> n.name.last
     'oberoi'
 
+    The namespace object is a 'container object'.  The default
+    iterator returns the names of values (i.e. keys).
+
     >>> l = list(n)
     >>> l.sort()
     >>> l
     ['name', 'x']
-    >>> l = list(n.name)
-    >>> l.sort()
-    >>> l
-    ['first', 'last']
+
+    Values can be deleted using 'del' and printed using 'print'.
 
     >>> n.aaa = 42
     >>> del n.x
-    >>> l = list(n)
-    >>> l.sort()
-    >>> l
-    ['aaa', 'name']
+    >>> print n
+    aaa = 42
+    name.first = paramjit
+    name.last = oberoi
+
+    Nested namepsaces are also namespaces:
+
+    >>> isinstance(n.name, namespace)
+    True
+    >>> print n.name
+    first = paramjit
+    last = oberoi
+
+    Finally, values can be read from a file as follows:
+
+    >>> from StringIO import StringIO
+    >>> sio = StringIO('''
+    ... # comment
+    ... ui.height = 100
+    ... ui.width = 150
+    ... complexity = medium
+    ... have_python
+    ... data.secret.password = goodness=gracious me
+    ... ''')
+    >>> n = basic_namespace()
+    >>> n.readfp(sio)
+    >>> print n
+    complexity = medium
+    data.secret.password = goodness=gracious me
+    have_python
+    ui.height = 100
+    ui.width = 150
     """
 
     # this makes sure that __setattr__ knows this is not a value key
@@ -107,8 +152,45 @@ class basic_namespace(namespace):
     def __iter__(self):
         return iter(self._data)
 
-    def _new_namespace(self, name):
+    def __str__(self, prefix=''):
+        lines = []
+        keys = self._data.keys()
+        keys.sort()
+        for name in keys:
+            value = self._data[name]
+            if isinstance(value, namespace):
+                lines.append(value.__str__(prefix='%s%s.' % (prefix,name)))
+            else:
+                if value is None:
+                    lines.append('%s%s' % (prefix, name))
+                else:
+                    lines.append('%s%s = %s' % (prefix, name, value))
+        return '\n'.join(lines)
+
+    def new_namespace(self, name):
         obj = basic_namespace()
         self._data[name] = obj
         return obj
 
+    def readfp(self, fp):
+        for line in fp:
+            line = line.strip()
+            if not line: continue
+            if line[0] == '#': continue
+            data = line.split('=', 1)
+            if len(data) == 1:
+                name = line
+                value = None
+            else:
+                name = data[0].strip()
+                value = data[1].strip()
+            name_components = name.split('.')
+            ns = self
+            for n in name_components[:-1]:
+                try:
+                    ns = ns[n]
+                    if not isinstance(ns, namespace):
+                        raise TypeError('value-namespace conflict', n)
+                except KeyError:
+                    ns = ns.new_namespace(n)
+            ns[name_components[-1]] = value

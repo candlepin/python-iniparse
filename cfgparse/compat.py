@@ -12,7 +12,7 @@ import iniparser
 
 class RawConfigParser(object):
     def __init__(self, defaults=None):
-        self.data = iniparser.inifile(defaults=defaults)
+        self.data = iniparser.ini_namespace(defaults=defaults)
 
     def defaults(self):
         d = {}
@@ -33,7 +33,7 @@ class RawConfigParser(object):
         if self.has_section(section):
             raise DuplicateSectionError(section)
         else:
-            self.data._new_namespace(section)
+            self.data.new_namespace(section)
 
     def has_section(self, section):
         """Indicate whether the named section is present in the configuration.
