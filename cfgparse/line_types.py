@@ -2,7 +2,7 @@
 # Also supports updates, while preserving structure
 # Backward-compatiable with ConfigParser
 
-import re, StringIO
+import re
 
 class line_type(object):
     line = None

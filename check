@@ -1,0 +1,2 @@
+pychecker cfgparse/*py tests/*py
+

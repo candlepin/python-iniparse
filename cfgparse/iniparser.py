@@ -2,7 +2,7 @@
 # Also supports updates, while preserving structure
 # Backward-compatiable with ConfigParser
 
-import re, StringIO
+import StringIO
 import line_types
 
 class getter(object):
@@ -56,19 +56,19 @@ class iniparser(object):
         for linetype in self.line_types:
             lineobj = linetype.parse(line)
             if lineobj:
-                return lineobj, linetype
+                return lineobj
         else:
             # can't parse line - convert to comment
-            return comment_line(line), comment_line
+            return line_types.comment_line(line)
 
     def read_file(self, f):
         cur_section = self.sections['DEFAULT']
         for line in f:
-            lineobj, linetype = self.parse(line)
+            lineobj = self.parse(line)
             self.lines.append(lineobj)
-            if linetype == line_types.option_line:
+            if isinstance(lineobj, line_types.option_line):
                 cur_section.add_option(lineobj)
-            elif linetype == line_types.section_line:
+            elif isinstance(lineobj, line_types.section_line):
                 cur_section = self.sections.get(lineobj.name)
                 if cur_section is None:
                     cur_section = section()
