@@ -148,7 +148,20 @@ class empty_line(line_type):
     parse = classmethod(parse)
 
 class continuation_line(line_type):
+    regex = re.compile(r'^\s+(?P<value>.*)$')
+
+    def __init__(self, value, value_offset=8, line=None):
+        super(continuation_line, self).__init__(line)
+        self.value = value
+        self.value_offset = value_offset
+
+    def to_string(self):
+        return ' '*self.value_offset + self.value
+
     def parse(cls, line):
-        return None
+        m = cls.regex.match(line.rstrip())
+        if m is None:
+            return None
+        return cls(m.group('value'), m.start('value'), line)
     parse = classmethod(parse)
 

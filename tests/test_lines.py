@@ -165,7 +165,13 @@ class test_other_lines(unittest.TestCase):
             self.assertEqual(str(line_types.empty_line.parse(s)), s)
 
     def test_continuation(self):
-        pass
+        for s in ['asdf', '; hi', '[sec]', 'a=3']:
+            self.assertEqual(line_types.continuation_line.parse(s), None)
+        for s in [' asdfasd ', '\t mmmm']:
+            self.assertEqual(line_types.continuation_line.parse(s).value,
+                             s.strip())
+            self.assertEqual(line_types.continuation_line.parse(s).to_string(),
+                             s.rstrip().replace('\t',' '))
 
 class suite(unittest.TestSuite):
     def __init__(self):

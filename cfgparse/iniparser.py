@@ -2,8 +2,6 @@
 # Also supports updates, while preserving structure
 # Backward-compatiable with ConfigParser
 
-import sys
-import StringIO
 import line_types
 
 def print_warning(w):
