@@ -1,5 +1,56 @@
-"""
-<description>
+"""Implements basic mechanisms for managing configuration information
+
+* A NAMESPACE is a collection of values and other namepsaces
+* A VALUE is a basic value, like 3.1415, or 'Hello World!'
+* A NAME identifies a value or namespace within a namespace
+
+The namespace class is an abstract class that defines the basic
+interface implemented by all namespace objects.  Two concrete
+implementations are include: basic_namespace and ini_namespace.
+
+Each is described in detail elsewhere.  However, here's an
+example of the capabilities available:
+
+Create namespace and populate it:
+
+    >>> n = basic_namespace()
+    >>> n.playlist.expand_playlist = True
+    >>> n.ui.display_clock = True
+    >>> n.ui.display_qlength = True
+    >>> n.ui.width = 150
+
+Examine data:
+
+    >>> print n.playlist.expand_playlist
+    True
+    >>> print n['ui']['width']
+    150
+
+    >>> print n
+    playlist.expand_playlist = True
+    ui.display_clock = True
+    ui.display_qlength = True
+    ui.width = 150
+
+Delete items:
+
+    >>> del n.playlist
+    >>> print n
+    ui.display_clock = True
+    ui.display_qlength = True
+    ui.width = 150
+
+Convert it to ini format:
+
+    >>> from cfgparse import iniparser
+    >>> i = iniparser.ini_namespace()
+    >>> i.import_namespace(n)
+
+    >>> print i
+    [ui]
+    display_clock = True
+    display_qlength = True
+    width = 150
 """
 
 # ---- Abstract classes
@@ -52,7 +103,7 @@ class namespace(object):
                         raise TypeError('value-namespace conflict')
                 except KeyError:
                     myns = self.new_namespace(name)
-                myns._import_ns(value)
+                myns.import_namespace(value)
             else:
                 self[name] = value
 
@@ -79,7 +130,7 @@ class basic_namespace(namespace):
     >>> n.name.first = 'paramjit'
     >>> n.name.last = 'oberoi'
 
-    ...and accessed the same way:
+    ...and accessed the same way, or with [...]:
 
     >>> n.x
     7
@@ -87,6 +138,8 @@ class basic_namespace(namespace):
     'paramjit'
     >>> n.name.last
     'oberoi'
+    >>> n['x']
+    7
 
     The namespace object is a 'container object'.  The default
     iterator returns the names of values (i.e. keys).
