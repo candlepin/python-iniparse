@@ -1,3 +1,7 @@
+# Copyright (c) 2001, 2002, 2003 Python Software Foundation
+# Copyright (c) 2004 Paramjit Oberoi <param.cs.wisc.edu>
+# All Rights Reserved.  See LICENSE-PSF & LICENSE for details.
+
 """Implements basic mechanisms for managing configuration information
 
 * A NAMESPACE is a collection of values and other namepsaces

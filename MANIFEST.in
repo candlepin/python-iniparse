@@ -1,0 +1,4 @@
+include cfgparse/*.py
+include tests/*.py
+include MANIFEST.in setup.py runtests.py
+include README Changelog LICENSE LICENSE-PSF
