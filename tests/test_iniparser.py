@@ -196,11 +196,11 @@ but = also me
         sio = StringIO(self.s1)
         p = iniparser.inifile(sio)
         self.assertEqual(str(p), self.s1)
-        self.assertEqual(p.data.find('section1').find('but').value, 'also me')
-        self.assertEqual(p.data.find('section1').find('help').value, 'yourself')
-        self.assertEqual(p.data.find('section2').find('just').value, 'kidding')
+        self.assertEqual(p._data.find('section1').find('but').value, 'also me')
+        self.assertEqual(p._data.find('section1').find('help').value, 'yourself')
+        self.assertEqual(p._data.find('section2').find('just').value, 'kidding')
 
-        itr = p.data.finditer('section1')
+        itr = p._data.finditer('section1')
         v = itr.next()
         self.assertEqual(v.find('help').value, 'yourself')
         self.assertEqual(v.find('but').value, 'also me')
@@ -209,8 +209,8 @@ but = also me
         self.assertEqual(v.find('I\'m').value, 'desperate')
         self.assertRaises(StopIteration, itr.next)
 
-        self.assertRaises(KeyError, p.data.find, 'section')
-        self.assertRaises(KeyError, p.data.find('section2').find, 'ahem')
+        self.assertRaises(KeyError, p._data.find, 'section')
+        self.assertRaises(KeyError, p._data.find('section2').find, 'ahem')
 
     def test_lookup(self):
         sio = StringIO(self.s1)

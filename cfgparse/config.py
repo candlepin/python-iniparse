@@ -4,62 +4,43 @@
 
 # ---- Abstract classes
 
-class value(object):
-    def get(self):
-        raise NotImplementedError()
-
-    def set(self, data):
-        raise NotImplementedError(data)
-
 
 class namespace(object):
-    def new_value(self, name, data):
-        raise NotImplementedError(name, data)
+    def __getitem__(self, key):
+        return NotImplementedError(key)
 
-    def new_namespace(self, name):
-        raise NotImplementedError(name)
+    def __setitem__(self, key, value):
+        raise NotImplementedError(key, value)
 
-    def rename(self, oldname, newname):
-        raise NotImplementedError(oldname, newname)
+    def __delitem__(self, key):
+        raise NotImplementedError(key)
 
-    def delete(self, name):
-        raise NotImplementedError(name)
-
-    def get(self, name):
-        return NotImplementedError(name)
-
-    def iterkeys(self):
+    def __iter__(self):
         return NotImplementedError()
+
+    def _new_namespace(self, name):
+        raise NotImplementedError(name)
 
     def __getattr__(self, name):
         try:
-            obj = self.get(name)
-            if isinstance(obj, value):
-                return obj.get()
-            else:
-                return obj
+            return self.__getitem__(name)
         except KeyError:
             return unknown(name, self)
 
-    def __setattr__(self, name, data):
+    def __setattr__(self, name, value):
         try:
             object.__getattribute__(self, name)
-            object.__setattr__(self, name, data)
+            object.__setattr__(self, name, value)
             return
         except AttributeError:
-            pass
-
-        try:
-            obj = self.get(name)
-            if isinstance(obj, value):
-                obj.set(data)
-            else:
-                raise TypeError("Attempt to set a non-value", name)
-        except KeyError:
-            self.new_value(name, data)
+            self.__setitem__(name, value)
 
     def __delattr__(self, name):
-        self.delete(name)
+        try:
+            object.__getattribute__(self, name)
+            object.__delattr__(self, name)
+        except AttributeError:
+            self.__delitem__(name)
 
 
 class unknown(object):
@@ -67,32 +48,12 @@ class unknown(object):
         object.__setattr__(self, 'name', name)
         object.__setattr__(self, 'namespace', namespace)
 
-    def __setattr__(self, name, data):
-        obj = self.namespace.new_namespace(self.name)
-        setattr(obj, name, data)
+    def __setattr__(self, name, value):
+        obj = self.namespace._new_namespace(self.name)
+        obj[name] = value
 
 
-# ---- Basic implementations of value and namespace
-
-class basic_value(value):
-    """Represents a value
-
-    >>> v = basic_value('paramjit')
-    >>> v.get()
-    'paramjit'
-    >>> v.set('oberoi')
-    >>> v.get()
-    'oberoi'
-    """
-
-    def __init__(self, data=None):
-        self.data = data
-
-    def get(self):
-        return self.data
-
-    def set(self, data):
-        self.data = data
+# ---- Basic implementation of namespace
 
 
 class basic_namespace(namespace):
@@ -111,49 +72,43 @@ class basic_namespace(namespace):
     >>> n.name.last
     'oberoi'
 
-    >>> l = list(n.iterkeys())
+    >>> l = list(n)
     >>> l.sort()
     >>> l
     ['name', 'x']
-    >>> l = list(n.name.iterkeys())
+    >>> l = list(n.name)
     >>> l.sort()
     >>> l
     ['first', 'last']
 
     >>> n.aaa = 42
     >>> del n.x
-    >>> n.rename('name', 'user')
-    >>> l = list(n.iterkeys())
+    >>> l = list(n)
     >>> l.sort()
     >>> l
-    ['aaa', 'user']
+    ['aaa', 'name']
     """
 
     # this makes sure that __setattr__ knows this is not a value key
-    named_values = None
+    _data = None
 
     def __init__(self):
-        self.named_values = {}
+        self._data = {}
 
-    def new_value(self, name, data):
-        obj = basic_value(data)
-        self.named_values[name] = obj
-        return obj
+    def __getitem__(self, key):
+        return self._data[key]
 
-    def new_namespace(self, name):
+    def __setitem__(self, key, value):
+        self._data[key] = value
+
+    def __delitem__(self, key):
+        del self._data[key]
+
+    def __iter__(self):
+        return iter(self._data)
+
+    def _new_namespace(self, name):
         obj = basic_namespace()
-        self.named_values[name] = obj
+        self._data[name] = obj
         return obj
 
-    def rename(self, oldname, newname):
-        self.named_values[newname] = self.named_values[oldname]
-        del self.named_values[oldname]
-
-    def delete(self, name):
-        del self.named_values[name]
-
-    def get(self, name):
-        return self.named_values[name]
-
-    def iterkeys(self):
-        return self.named_values.iterkeys()

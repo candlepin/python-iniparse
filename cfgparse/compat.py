@@ -9,13 +9,13 @@ class RawConfigParser(object):
 
     def defaults(self):
         d = {}
-        for name, value in self.data.defaults.options.iteritems():
-            d[name] = value.get()
+        for name, lineobj in self.data._defaults._options:
+            d[name] = lineobj.value
         return d
 
     def sections(self):
         """Return a list of section names, excluding [DEFAULT]"""
-        return list(self.data.iterkeys())
+        return list(self.data)
 
     def add_section(self, section):
         """Create a new section in the configuration.
@@ -26,7 +26,7 @@ class RawConfigParser(object):
         if self.has_section(section):
             raise ConfigParser.DuplicateSectionError(section)
         else:
-            self.data.new_namespace(section)
+            self.data._new_namespace(section)
 
     def has_section(self, section):
         """Indicate whether the named section is present in the configuration.
@@ -34,7 +34,7 @@ class RawConfigParser(object):
         The DEFAULT section is not acknowledged.
         """
         try:
-            self.data.get(section)
+            self.data[section]
             return True
         except KeyError:
             return False
@@ -44,7 +44,7 @@ class RawConfigParser(object):
         if not self.has_section(section):
             raise ConfigParser.NoSectionError(section)
         else:
-            return list(self.data.get(section).iterkeys())
+            return list(self.data[section])
 
     def read(self, filenames):
         """Read and parse a filename or a list of filenames.
@@ -82,15 +82,15 @@ class RawConfigParser(object):
         elif not self.has_option(section, option):
             raise ConfigParser.NoOptionError(option, section)
         else:
-            return self.data.get(section).get(option).get()
+            return self.data[section][option]
 
     def items(self, section):
         if not self.has_section(section):
             raise ConfigParser.NoSectionError(section)
         else:
             ans = []
-            for opt in self.data.get(section).iterkeys():
-                ans.append((opt, self.data.get(section).get(opt).get()))
+            for opt in self.data[section]:
+                ans.append((opt, self.data[section][opt]))
             return ans
 
     def getint(self, section, option):
@@ -108,8 +108,8 @@ class RawConfigParser(object):
             raise ValueError, 'Not a boolean: %s' % v
         return self._boolean_states[v.lower()]
 
-    def get_oxf(self): return self.data.optionxform
-    def set_oxf(self, value): self.data.optionxform = value
+    def get_oxf(self): return self.data._optionxform
+    def set_oxf(self, value): self.data._optionxform = value
     optionxform = property(get_oxf, set_oxf)
 
     def has_option(self, section, option):
@@ -118,7 +118,7 @@ class RawConfigParser(object):
             raise ConfigParser.NoSectionError(section)
         else:
             try:
-                self.data.get(section).get(option)
+                self.data[section][option]
                 return True
             except KeyError:
                 return False
@@ -127,7 +127,7 @@ class RawConfigParser(object):
         """Set an option."""
         if not self.has_section(section):
             raise ConfigParser.NoSectionError(section)
-        setattr(self.data.get(section), option, value)
+        self.data[section][option] = value
 
     def write(self, fp):
         """Write an .ini-format representation of the configuration state."""
@@ -139,13 +139,13 @@ class RawConfigParser(object):
             raise ConfigParser.NoSectionError(section)
         if not self.has_option(section, option):
             return 0
-        self.data.get(section).delete(option)
+        del self.data[section][option]
         return 1
 
     def remove_section(self, section):
         """Remove a file section."""
         if not self.has_section(section):
             return False
-        self.data.delete(section)
+        del self.data[section]
         return True
 

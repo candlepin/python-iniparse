@@ -228,68 +228,52 @@ class line_container(object):
 
 
 class section(config.namespace):
-    lineobj = None
-    options = None
-    defaults = None
-    optionxform = None
+    _lineobj = None
+    _options = None
+    _defaults = None
+    _optionxform = None
     def __init__(self, lineobj, defaults = None, optionxform=None):
-        self.lineobj = lineobj
-        self.defaults = defaults
-        self.optionxform = optionxform
-        self.options = {}
+        self._lineobj = lineobj
+        self._defaults = defaults
+        self._optionxform = optionxform
+        self._options = {}
 
-    def new_value(self, name, data):
-        obj = line_container(option_line(name, ''))
-        self.lineobj.add(obj)
-        if self.optionxform: name = self.optionxform(name)
-        self.options[name] = opt = option(obj)
-        # we call opt.set() explicitly to automatically
-        # handle the case of data having multiple lines
-        opt.set(data)
-        return opt
-
-    def new_namespace(self, name):
-        raise Exception('No sub-sections allowed', name)
-
-    def rename(self, oldname, newname):
-        if self.optionxform: oldname = self.optionxform(oldname)
-        self.options[oldname].name = newname
-        if self.optionxform: newname = self.optionxform(newname)
-        self.options[newname] = self.options[oldname]
-        del self.options[oldname]
-
-    def delete(self, name):
-        if self.optionxform: name = self.optionxform(name)
-        self.lineobj.contents.remove(self.options[name].lineobj)
-        del self.options[name]
-
-    def get(self, name):
-        if self.optionxform: name = self.optionxform(name)
+    def __getitem__(self, key):
+        if self._optionxform: key = self._optionxform(key)
         try:
-            return self.options[name]
+            return self._options[key].value
         except KeyError:
-            if self.defaults and name in self.defaults.options:
-                return self.defaults.options[name]
+            if self._defaults and key in self._defaults._options:
+                return self._defaults._options[key].value
             else:
                 raise
 
-    def iterkeys(self):
-        for x in self.options.iterkeys():
+    def __setitem__(self, key, value):
+        if self._optionxform: xkey = self._optionxform(key)
+        else: xkey = key
+        if xkey not in self._options:
+            # create a dummy object - value may have multiple lines
+            obj = line_container(option_line(key, ''))
+            self._lineobj.add(obj)
+            self._options[xkey] = obj
+        # the set_value() function in line_container
+        # automatically handles multi-line values
+        self._options[xkey].value = value
+
+    def __delitem__(self, key):
+        if self._optionxform: key = self._optionxform(key)
+        self._lineobj.contents.remove(self._options[key])
+        del self._options[key]
+
+    def __iter__(self):
+        for x in self._options:
             yield x
-        if self.defaults:
-            for x in self.defaults.options.iterkeys():
+        if self._defaults:
+            for x in self._defaults._options:
                 yield x
 
-
-class option(config.value):
-    def __init__(self, lineobj):
-        self.lineobj = lineobj
-
-    def get(self):
-        return self.lineobj.value
-
-    def set(self, data):
-        self.lineobj.value = data
+    def _new_namespace(self, name):
+        raise Exception('No sub-sections allowed', name)
 
 
 def make_comment(line):
@@ -297,72 +281,70 @@ def make_comment(line):
 
 
 class inifile(config.namespace):
-    data = None
-    sections = None
-    defaults = None
-    sectionxform = None
-    optionxform = None
-    parse_exc = None
+    _data = None
+    _sections = None
+    _defaults = None
+    _sectionxform = None
+    _optionxform = None
+    _parse_exc = None
     def __init__(self, fobj=None, defaults = None, parse_exc=True,
                  optionxform=str.lower, sectionxform=None):
-        self.data = line_container()
-        self.parse_exc = parse_exc
-        self.optionxform = optionxform
-        self.sectionxform = sectionxform
-        self.sections = {}
+        self._data = line_container()
+        self._parse_exc = parse_exc
+        self._optionxform = optionxform
+        self._sectionxform = sectionxform
+        self._sections = {}
         if defaults is None: defaults = {}
-        self.defaults = section(line_container(), optionxform=optionxform)
+        self._defaults = section(line_container(), optionxform=optionxform)
         for name, value in defaults.iteritems():
-            self.defaults.new_value(name, value)
+            self._defaults[name] = value
         if fobj is not None:
             self.read(fobj)
 
-    def new_value(self, name, data):
-        raise Exception('No values allowed at the top level', name, data)
+    def __getitem__(self, key):
+        if self._sectionxform: key = self._sectionxform(key)
+        return self._sections[key]
 
-    def new_namespace(self, name):
-        if (self.data.contents):
-            self.data.add(empty_line())
+    def __setitem__(self, key, value):
+        raise Exception('Values must be inside sections', key, value)
+
+    def __delitem__(self, key):
+        if self._sectionxform: key = self._sectionxform(key)
+        self._data.contents.remove(self._sections[key]._lineobj)
+        del self._sections[key]
+
+    def __iter__(self):
+        return iter(self._sections)
+
+    def _new_namespace(self, name):
+        if self._data.contents:
+            self._data.add(empty_line())
         obj = line_container(section_line(name))
-        self.data.add(obj)
-        if self.sectionxform: name = self.sectionxform(name)
-        self.sections[name] = ns = section(obj, defaults=self.defaults,
-                                           optionxform=self.optionxform)
+        self._data.add(obj)
+        if self._sectionxform: name = self._sectionxform(name)
+        if name in self._sections:
+            ns = self._sections[name]
+            ns._lineobj = obj
+        else:
+            ns = section(obj, defaults=self._defaults,
+                              optionxform=self._optionxform)
+            self._sections[name] = ns
         return ns
 
-    def rename(self, oldname, newname):
-        if self.sectionxform: oldname = self.sectionxform(oldname)
-        self.sections[oldname].name = newname
-        if self.sectionxform: newname = self.sectionxform(newname)
-        self.sections[newname] = self.sections[oldname]
-        del self.sections[oldname]
-
-    def delete(self, name):
-        if self.sectionxform: name = self.sectionxform(name)
-        self.data.contents.remove(self.sections[name].lineobj)
-        del self.sections[name]
-
-    def get(self, name):
-        if self.sectionxform: name = self.sectionxform(name)
-        return self.sections[name]
-
-    def iterkeys(self):
-        return self.sections.iterkeys()
-
     def __str__(self):
-        return str(self.data)
+        return str(self._data)
 
-    line_types = [empty_line, comment_line,
-                  section_line, option_line,
-                  continuation_line]
+    _line_types = [empty_line, comment_line,
+                   section_line, option_line,
+                   continuation_line]
 
-    def parse(self, line):
-        for linetype in self.line_types:
+    def _parse(self, line):
+        for linetype in self._line_types:
             lineobj = linetype.parse(line)
             if lineobj:
                 return lineobj
         else:
-            # can't parse line - convert to comment
+            # can't parse line
             return None
 
     def read(self, fobj):
@@ -378,18 +360,18 @@ class inifile(config.namespace):
         linecount = 0
         exc = None
         for line in fobj:
-            lineobj = self.parse(line)
+            lineobj = self._parse(line)
             linecount += 1
 
             if not cur_section and not isinstance(lineobj,
                                 (comment_line, empty_line, section_line)):
-                if self.parse_exc:
+                if self._parse_exc:
                     raise MissingSectionHeaderError(fname, linecount, line)
                 else:
                     lineobj = make_comment(line)
 
             if lineobj is None:
-                if self.parse_exc:
+                if self._parse_exc:
                     if exc is None: exc = ParsingError(fname)
                     exc.append(linecount, line)
                 lineobj = make_comment(line)
@@ -399,7 +381,7 @@ class inifile(config.namespace):
                     cur_option.add(lineobj)
                 else:
                     # illegal continuation line - convert to comment
-                    if self.parse_exc:
+                    if self._parse_exc:
                         if exc is None: exc = ParsingError(fname)
                         exc.append(linecount, line)
                     lineobj = make_comment(line)
@@ -412,42 +394,42 @@ class inifile(config.namespace):
                 pending_lines = []
                 cur_option = line_container(lineobj)
                 cur_section.add(cur_option)
-                if self.optionxform:
-                    cur_option_name = self.optionxform(cur_option.name)
+                if self._optionxform:
+                    cur_option_name = self._optionxform(cur_option.name)
                 else:
                     cur_option_name = cur_option.name
                 if cur_section_name == DEFAULTSECT:
-                    optobj = self.defaults
+                    optobj = self._defaults
                 else:
-                    optobj = self.sections[cur_section_name]
-                optobj.options[cur_option_name] = option(cur_option)
+                    optobj = self._sections[cur_section_name]
+                optobj._options[cur_option_name] = cur_option
 
             if isinstance(lineobj, section_line):
-                self.data.extend(pending_lines)
+                self._data.extend(pending_lines)
                 pending_lines = []
                 cur_section = line_container(lineobj)
-                self.data.add(cur_section)
+                self._data.add(cur_section)
                 if cur_section.name == DEFAULTSECT:
-                    self.defaults.lineobj = cur_section
+                    self._defaults.lineobj = cur_section
                     cur_section_name = DEFAULTSECT
                 else:
-                    if self.sectionxform:
-                        cur_section_name = self.sectionxform(cur_section.name)
+                    if self._sectionxform:
+                        cur_section_name = self._sectionxform(cur_section.name)
                     else:
                         cur_section_name = cur_section.name
-                    if not self.sections.has_key(cur_section_name):
-                        self.sections[cur_section_name] = \
-                                section(cur_section, defaults=self.defaults,
-                                        optionxform=self.optionxform)
+                    if not self._sections.has_key(cur_section_name):
+                        self._sections[cur_section_name] = \
+                                section(cur_section, defaults=self._defaults,
+                                        optionxform=self._optionxform)
                     else:
-                        self.sections[cur_section_name].lineobj = cur_section
+                        self._sections[cur_section_name]._lineobj = cur_section
 
             if isinstance(lineobj, (comment_line, empty_line)):
                 pending_lines.append(lineobj)
 
-        self.data.extend(pending_lines)
+        self._data.extend(pending_lines)
         if line and line[-1]=='\n':
-            self.data.add(empty_line())
+            self._data.add(empty_line())
 
         if exc:
             raise exc
