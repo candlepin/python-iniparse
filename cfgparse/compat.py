@@ -64,7 +64,7 @@ class RawConfigParser(object):
                 fp = open(filename)
             except IOError:
                 continue
-            self.data.read(fp)
+            self.data.readfp(fp)
             fp.close()
 
     def readfp(self, fp, filename=None):
@@ -75,7 +75,7 @@ class RawConfigParser(object):
         taken from fp.name.  If fp has no `name' attribute, `<???>' is
         used.
         """
-        self.data.read(fp)
+        self.data.readfp(fp)
 
     def get(self, section, option):
         try:

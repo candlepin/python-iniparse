@@ -266,10 +266,14 @@ class section(config.namespace):
         del self._options[key]
 
     def __iter__(self):
-        for x in self._options:
-            yield x
+        for x in self._lineobj.contents:
+            if isinstance(x, line_container):
+                if self._optionxform:
+                    yield self._optionxform(x.name)
+                else:
+                    yield x.name
         if self._defaults:
-            for x in self._defaults._options:
+            for x in self._defaults:
                 yield x
 
     def _new_namespace(self, name):
@@ -287,7 +291,7 @@ class inifile(config.namespace):
     _sectionxform = None
     _optionxform = None
     _parse_exc = None
-    def __init__(self, fobj=None, defaults = None, parse_exc=True,
+    def __init__(self, fp=None, defaults = None, parse_exc=True,
                  optionxform=str.lower, sectionxform=None):
         self._data = line_container()
         self._parse_exc = parse_exc
@@ -298,8 +302,8 @@ class inifile(config.namespace):
         self._defaults = section(line_container(), optionxform=optionxform)
         for name, value in defaults.iteritems():
             self._defaults[name] = value
-        if fobj is not None:
-            self.read(fobj)
+        if fp is not None:
+            self.readfp(fp)
 
     def __getitem__(self, key):
         if self._sectionxform: key = self._sectionxform(key)
@@ -314,7 +318,9 @@ class inifile(config.namespace):
         del self._sections[key]
 
     def __iter__(self):
-        return iter(self._sections)
+        for x in self._data.contents:
+            if isinstance(x, line_container):
+                yield x.name
 
     def _new_namespace(self, name):
         if self._data.contents:
@@ -347,19 +353,19 @@ class inifile(config.namespace):
             # can't parse line
             return None
 
-    def read(self, fobj):
+    def readfp(self, fp):
         cur_section = None
         cur_option = None
         cur_section_name = None
         cur_option_name = None
         pending_lines = []
         try:
-            fname = fobj.name
+            fname = fp.name
         except AttributeError:
             fname = '<???>'
         linecount = 0
         exc = None
-        for line in fobj:
+        for line in fp:
             lineobj = self._parse(line)
             linecount += 1
 
