@@ -9,6 +9,7 @@ help = me
 I'm  = desperate     ; really!
 
 [section2]
+just = what?
 just = kidding
 
 [section1]

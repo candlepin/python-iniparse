@@ -22,11 +22,14 @@ class line_container(object):
         s = [str(x) for x in self.contents]
         return '\n'.join(s)
 
-    def get(self, key):
+    def get(self, key, multiple=True):
         matches = []
         for x in self.contents[::-1]:
             if hasattr(x, 'name') and x.name==key:
-                matches.append(x)
+                if multiple:
+                    matches.append(x)
+                else:
+                    return x
 
         if not matches:
             raise KeyError(key)
@@ -54,7 +57,7 @@ class section(line_container):
         self.name = lineobj.name
 
     def get(self, key):
-        return super(section, self).get(key).value()
+        return super(section, self).get(key, multiple=False).value()
 
 class option(line_container):
     def __init__(self, lineobj):
