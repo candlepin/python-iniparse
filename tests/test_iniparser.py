@@ -265,7 +265,8 @@ op3 = qwert
 
     def test_invalid(self):
         for (org, mod) in self.inv:
-            self.assertEqual(str(iniparser.inifile(StringIO(org))), mod)
+            ip = iniparser.inifile(StringIO(org), parse_exc=False)
+            self.assertEqual(str(ip), mod)
 
 
 class suite(unittest.TestSuite):
