@@ -239,6 +239,8 @@ class section(config.namespace):
         self._options = {}
 
     def __getitem__(self, key):
+        if key == '__name__':
+            return self._lines[-1].name
         if self._optionxform: key = self._optionxform(key)
         try:
             return self._options[key].value
@@ -322,6 +324,8 @@ class inifile(config.namespace):
             self.readfp(fp)
 
     def __getitem__(self, key):
+        if key == DEFAULTSECT:
+            return self._defaults
         if self._sectionxform: key = self._sectionxform(key)
         return self._sections[key]
 

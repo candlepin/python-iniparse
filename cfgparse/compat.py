@@ -1,6 +1,9 @@
 # compatibility interfaces for ConfigParser
 
-from ConfigParser import DuplicateSectionError, NoSectionError, NoOptionError
+from ConfigParser import DuplicateSectionError,  \
+                  NoSectionError, NoOptionError, \
+                  InterpolationMissingOptionError, InterpolationDepthError, \
+                  DEFAULTSECT, MAX_INTERPOLATION_DEPTH
 
 import iniparser
 
@@ -77,14 +80,15 @@ class RawConfigParser(object):
         """
         self.data.readfp(fp)
 
-    def get(self, section, option):
+    def get(self, section, option, vars=None):
+        if not self.has_section(section):
+            raise NoSectionError(section)
+        if vars is not None and option in vars:
+            value = vars[option]
         try:
             return self.data[section][option]
         except KeyError:
-            if not self.has_section(section):
-                raise NoSectionError(section)
-            else:
-                raise NoOptionError(option, section)
+            raise NoOptionError(option, section)
 
     def items(self, section):
         try:
@@ -158,6 +162,16 @@ class RawConfigParser(object):
         return True
 
 
+class cfg_dict(object):
+    def __init__(self, cfg, section, vars):
+        self.cfg = cfg
+        self.section = section
+        self.vars = vars
+
+    def __getitem__(self, key):
+        return RawConfigParser.get(self.cfg, self.section, key, self.vars)
+
+
 class ConfigParser(RawConfigParser):
 
     def get(self, section, option, raw=False, vars=None):
@@ -171,25 +185,32 @@ class ConfigParser(RawConfigParser):
 
         The section DEFAULT is special.
         """
-        d = self._defaults.copy()
-        try:
-            d.update(self._sections[section])
-        except KeyError:
-            if section != DEFAULTSECT:
-                raise NoSectionError(section)
-        # Update with the entry specific variables
-        if vars is not None:
-            d.update(vars)
-        option = self.optionxform(option)
-        try:
-            value = d[option]
-        except KeyError:
-            raise NoOptionError(option, section)
+        if section != DEFAULTSECT and not self.has_section(section):
+            raise NoSectionError(section)
 
-        if raw:
-            return value
-        else:
-            return self._interpolate(section, option, value, d)
+        option = self.optionxform(option)
+        value = RawConfigParser.get(self, section, option, vars)
+
+        if raw: return value
+
+        # do the string interpolation
+        rawval = value
+        depth = MAX_INTERPOLATION_DEPTH
+        vdict = cfg_dict(self, section, vars)
+        while depth:                    # Loop through this until it's done
+            depth -= 1
+            if value.find("%(") != -1:
+                try:
+                    value = value % vdict
+                except NoOptionError, e:
+                    raise InterpolationMissingOptionError(
+                        option, section, rawval, e.option)
+            else:
+                break
+        if value.find("%(") != -1:
+            raise InterpolationDepthError(option, section, rawval)
+        return value
+
 
     def items(self, section, raw=False, vars=None):
         """Return a list of tuples with (name, value) for each option
@@ -203,40 +224,22 @@ class ConfigParser(RawConfigParser):
 
         The section DEFAULT is special.
         """
-        d = self._defaults.copy()
-        try:
-            d.update(self._sections[section])
-        except KeyError:
-            if section != DEFAULTSECT:
-                raise NoSectionError(section)
-        # Update with the entry specific variables
-        if vars:
-            d.update(vars)
-        options = d.keys()
+        if section != DEFAULTSECT and not self.has_section(section):
+            raise NoSectionError(section)
+        if vars is None:
+            options = list(self.data[section])
+        else:
+            options = []
+            for x in self.data[section]:
+                if x not in vars:
+                    options.append(x)
+            options.extend(vars.keys())
         if "__name__" in options:
             options.remove("__name__")
         if raw:
-            return [(option, d[option])
+            return [(option, RawConfigParser.get(self, section, option, vars))
                     for option in options]
         else:
-            return [(option, self._interpolate(section, option, d[option], d))
+            return [(option, self.get(section, option, vars=vars))
                     for option in options]
-
-    def _interpolate(self, section, option, rawval, vars):
-        # do the string interpolation
-        value = rawval
-        depth = MAX_INTERPOLATION_DEPTH
-        while depth:                    # Loop through this until it's done
-            depth -= 1
-            if value.find("%(") != -1:
-                try:
-                    value = value % vars
-                except KeyError, e:
-                    raise InterpolationMissingOptionError(
-                        option, section, rawval, e[0])
-            else:
-                break
-        if value.find("%(") != -1:
-            raise InterpolationDepthError(option, section, rawval)
-        return value
 
