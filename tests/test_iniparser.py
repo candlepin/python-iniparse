@@ -223,6 +223,30 @@ but = also me
         self.assertEqual(p.section1.just.__class__, config.unknown)
         self.assertEqual(p.section2.help.__class__, config.unknown)
 
+    def test_order(self):
+        sio = StringIO(self.s1)
+        p = iniparser.inifile(sio)
+        self.assertEqual(list(p), ['section1','section2'])
+        self.assertEqual(list(p.section1), ['help', "i'm", 'but'])
+        self.assertEqual(list(p.section2), ['just'])
+
+    def test_delete(self):
+        sio = StringIO(self.s1)
+        p = iniparser.inifile(sio)
+        del p.section1.help
+        self.assertEqual(list(p.section1), ["i'm", 'but'])
+        self.assertEqual(str(p), """
+[section1]
+I'm  = desperate     ; really!
+
+[section2]
+just = what?
+just = kidding
+
+[section1]
+but = also me
+""")
+
     inv = (
 ("""
 # values must be in a section

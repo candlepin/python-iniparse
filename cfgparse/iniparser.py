@@ -4,7 +4,7 @@
 
 import re
 import config
-
+from sets import Set
 from ConfigParser import DEFAULTSECT, ParsingError, MissingSectionHeaderError
 
 class line_type(object):
@@ -228,12 +228,12 @@ class line_container(object):
 
 
 class section(config.namespace):
-    _lineobj = None
+    _lines = None
     _options = None
     _defaults = None
     _optionxform = None
     def __init__(self, lineobj, defaults = None, optionxform=None):
-        self._lineobj = lineobj
+        self._lines = [lineobj]
         self._defaults = defaults
         self._optionxform = optionxform
         self._options = {}
@@ -254,7 +254,7 @@ class section(config.namespace):
         if xkey not in self._options:
             # create a dummy object - value may have multiple lines
             obj = line_container(option_line(key, ''))
-            self._lineobj.add(obj)
+            self._lines[-1].add(obj)
             self._options[xkey] = obj
         # the set_value() function in line_container
         # automatically handles multi-line values
@@ -262,19 +262,35 @@ class section(config.namespace):
 
     def __delitem__(self, key):
         if self._optionxform: key = self._optionxform(key)
-        self._lineobj.contents.remove(self._options[key])
+        for l in self._lines:
+            remaining = []
+            for o in l.contents:
+                if isinstance(o, line_container):
+                    n = o.name
+                    if self._optionxform: n = self._optionxform(n)
+                    if key != n: remaining.append(o)
+                else:
+                    remaining.append(o)
+            l.contents = remaining
         del self._options[key]
 
     def __iter__(self):
-        for x in self._lineobj.contents:
-            if isinstance(x, line_container):
-                if self._optionxform:
-                    yield self._optionxform(x.name)
-                else:
-                    yield x.name
+        d = Set()
+        for l in self._lines:
+            for x in l.contents:
+                if isinstance(x, line_container):
+                    if self._optionxform:
+                        ans = self._optionxform(x.name)
+                    else:
+                        ans = x.name
+                    if ans not in d:
+                        yield ans
+                        d.add(ans)
         if self._defaults:
             for x in self._defaults:
-                yield x
+                if x not in d:
+                    yield x
+                    d.add(x)
 
     def _new_namespace(self, name):
         raise Exception('No sub-sections allowed', name)
@@ -318,9 +334,12 @@ class inifile(config.namespace):
         del self._sections[key]
 
     def __iter__(self):
+        d = Set()
         for x in self._data.contents:
             if isinstance(x, line_container):
-                yield x.name
+                if x.name not in d:
+                    yield x.name
+                    d.add(x.name)
 
     def _new_namespace(self, name):
         if self._data.contents:
@@ -330,7 +349,7 @@ class inifile(config.namespace):
         if self._sectionxform: name = self._sectionxform(name)
         if name in self._sections:
             ns = self._sections[name]
-            ns._lineobj = obj
+            ns._lines.append(obj)
         else:
             ns = section(obj, defaults=self._defaults,
                               optionxform=self._optionxform)
@@ -416,7 +435,7 @@ class inifile(config.namespace):
                 cur_section = line_container(lineobj)
                 self._data.add(cur_section)
                 if cur_section.name == DEFAULTSECT:
-                    self._defaults.lineobj = cur_section
+                    self._defaults._lines.append(cur_section)
                     cur_section_name = DEFAULTSECT
                 else:
                     if self._sectionxform:
@@ -428,7 +447,7 @@ class inifile(config.namespace):
                                 section(cur_section, defaults=self._defaults,
                                         optionxform=self._optionxform)
                     else:
-                        self._sections[cur_section_name]._lineobj = cur_section
+                        self._sections[cur_section_name]._lines.append(cur_section)
 
             if isinstance(lineobj, (comment_line, empty_line)):
                 pending_lines.append(lineobj)
