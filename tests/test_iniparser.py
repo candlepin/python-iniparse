@@ -1,8 +1,9 @@
 import unittest
 from StringIO import StringIO
 
-import cfgparse.iniparser as iniparser
-import cfgparse.config as config
+from cfgparse import iniparser
+from cfgparse import compat
+from cfgparse import config
 
 class test_section_line(unittest.TestCase):
     invalid_lines = [
@@ -246,6 +247,23 @@ just = kidding
 [section1]
 but = also me
 """)
+
+    def check_order(self, c):
+        sio = StringIO(self.s1)
+        c = c({'pi':'3.14153'})
+        c.readfp(sio)
+        self.assertEqual(c.sections(), ['section1','section2'])
+        self.assertEqual(c.options('section1'), ['help', "i'm", 'but', 'pi'])
+        self.assertEqual(c.items('section1'), [
+            ('help', 'yourself'),
+            ("i'm", 'desperate'),
+            ('but', 'also me'),
+            ('pi', '3.14153'),
+        ])
+
+    def test_compat_order(self):
+        self.check_order(compat.RawConfigParser)
+        self.check_order(compat.ConfigParser)
 
     inv = (
 ("""

@@ -1,8 +1,11 @@
 # compatibility interfaces for ConfigParser
 
-from ConfigParser import DuplicateSectionError,  \
-                  NoSectionError, NoOptionError, \
-                  InterpolationMissingOptionError, InterpolationDepthError, \
+import re
+from ConfigParser import DuplicateSectionError,    \
+                  NoSectionError, NoOptionError,   \
+                  InterpolationMissingOptionError, \
+                  InterpolationDepthError,         \
+                  InterpolationSyntaxError,        \
                   DEFAULTSECT, MAX_INTERPOLATION_DEPTH
 
 import iniparser
@@ -169,7 +172,10 @@ class cfg_dict(object):
         self.vars = vars
 
     def __getitem__(self, key):
-        return RawConfigParser.get(self.cfg, self.section, key, self.vars)
+        try:
+            return RawConfigParser.get(self.cfg, self.section, key, self.vars)
+        except (NoOptionError, NoSectionError):
+            raise KeyError(key)
 
 
 class ConfigParser(RawConfigParser):
@@ -191,26 +197,29 @@ class ConfigParser(RawConfigParser):
         option = self.optionxform(option)
         value = RawConfigParser.get(self, section, option, vars)
 
-        if raw: return value
+        if raw:
+            return value
+        else:
+            d = cfg_dict(self, section, vars)
+            return self._interpolate(section, option, value, d)
 
+    def _interpolate(self, section, option, rawval, vars):
         # do the string interpolation
-        rawval = value
+        value = rawval
         depth = MAX_INTERPOLATION_DEPTH
-        vdict = cfg_dict(self, section, vars)
         while depth:                    # Loop through this until it's done
             depth -= 1
             if value.find("%(") != -1:
                 try:
-                    value = value % vdict
-                except NoOptionError, e:
+                    value = value % vars
+                except KeyError, e:
                     raise InterpolationMissingOptionError(
-                        option, section, rawval, e.option)
+                        option, section, rawval, e[0])
             else:
                 break
         if value.find("%(") != -1:
             raise InterpolationDepthError(option, section, rawval)
         return value
-
 
     def items(self, section, raw=False, vars=None):
         """Return a list of tuples with (name, value) for each option
@@ -234,12 +243,63 @@ class ConfigParser(RawConfigParser):
                 if x not in vars:
                     options.append(x)
             options.extend(vars.keys())
+
         if "__name__" in options:
             options.remove("__name__")
+
+        d = cfg_dict(self, section, vars)
         if raw:
-            return [(option, RawConfigParser.get(self, section, option, vars))
+            return [(option, d[option])
                     for option in options]
         else:
-            return [(option, self.get(section, option, vars=vars))
+            return [(option, self._interpolate(section, option, d[option], d))
                     for option in options]
 
+
+class SafeConfigParser(ConfigParser):
+
+    def _interpolate(self, section, option, rawval, vars):
+        # do the string interpolation
+        L = []
+        self._interpolate_some(option, L, rawval, section, vars, 1)
+        return ''.join(L)
+
+    _interpvar_match = re.compile(r"%\(([^)]+)\)s").match
+
+    def _interpolate_some(self, option, accum, rest, section, map, depth):
+        if depth > MAX_INTERPOLATION_DEPTH:
+            raise InterpolationDepthError(option, section, rest)
+        while rest:
+            p = rest.find("%")
+            if p < 0:
+                accum.append(rest)
+                return
+            if p > 0:
+                accum.append(rest[:p])
+                rest = rest[p:]
+            # p is no longer used
+            c = rest[1:2]
+            if c == "%":
+                accum.append("%")
+                rest = rest[2:]
+            elif c == "(":
+                m = self._interpvar_match(rest)
+                if m is None:
+                    raise InterpolationSyntaxError(option, section,
+                        "bad interpolation variable reference %r" % rest)
+                var = m.group(1)
+                rest = rest[m.end():]
+                try:
+                    v = map[var]
+                except KeyError:
+                    raise InterpolationMissingOptionError(
+                        option, section, rest, var)
+                if "%" in v:
+                    self._interpolate_some(option, accum, v,
+                                           section, map, depth + 1)
+                else:
+                    accum.append(v)
+            else:
+                raise InterpolationSyntaxError(
+                    option, section,
+                    "'%' must be followed by '%' or '(', found: " + `rest`)
