@@ -1,6 +1,7 @@
 import unittest
 from StringIO import StringIO
 from cfgparse.iniparser import inifile
+from cfgparse.config import unknown
 
 class test_iniparser(unittest.TestCase):
     s1 = """
@@ -20,38 +21,33 @@ but = also me
     def test_basic(self):
         sio = StringIO(self.s1)
         p = inifile(sio)
-        self.assertEqual(str(p), self.s1)
-        self.assertEqual(p.find('section1').find('but').value(), 'also me')
-        self.assertEqual(p.find('section1').find('help').value(), 'yourself')
-        self.assertEqual(p.find('section2').find('just').value(), 'kidding')
+        self.assertEqual(str(p.data), self.s1)
+        self.assertEqual(p.data.find('section1').find('but').value, 'also me')
+        self.assertEqual(p.data.find('section1').find('help').value, 'yourself')
+        self.assertEqual(p.data.find('section2').find('just').value, 'kidding')
 
-        itr = p.finditer('section1')
+        itr = p.data.finditer('section1')
         v = itr.next()
-        self.assertEqual(v.find('help').value(), 'yourself')
-        self.assertEqual(v.find('but').value(), 'also me')
+        self.assertEqual(v.find('help').value, 'yourself')
+        self.assertEqual(v.find('but').value, 'also me')
         v = itr.next()
-        self.assertEqual(v.find('help').value(), 'me')
-        self.assertEqual(v.find('I\'m').value(), 'desperate')
+        self.assertEqual(v.find('help').value, 'me')
+        self.assertEqual(v.find('I\'m').value, 'desperate')
         self.assertRaises(StopIteration, itr.next)
 
-        self.assertRaises(KeyError, p.find, 'section')
-        self.assertRaises(KeyError, p.find('section2').find, 'ahem')
+        self.assertRaises(KeyError, p.data.find, 'section')
+        self.assertRaises(KeyError, p.data.find('section2').find, 'ahem')
 
     def test_lookup(self):
         sio = StringIO(self.s1)
         p = inifile(sio)
-        self.assertEqual(p.lookup('section1.help').value(), 'yourself')
-        self.assertEqual(p.lookup('section1.but').value(), 'also me')
-        self.assertEqual(p.lookup('section1.I\'m').value(), 'desperate')
-        self.assertEqual(p.lookup('section2.just').value(), 'kidding')
+        self.assertEqual(p.section1.help, 'yourself')
+        self.assertEqual(p.section1.but, 'also me')
+        self.assertEqual(getattr(p.section1, 'I\'m'), 'desperate')
+        self.assertEqual(p.section2.just, 'kidding')
 
-        self.assertRaises(KeyError, p.lookup, 'section1.just')
-        self.assertRaises(KeyError, p.lookup, 'section2.help')
-
-    def disable_test_options(self):
-        sio = StringIO(self.s1)
-        p = inifile(sio)
-        self.assertEqual(p.options.section2.just, 'kidding')
+        self.assertEqual(p.section1.just.__class__, unknown)
+        self.assertEqual(p.section2.help.__class__, unknown)
 
     inv = (
 ("""
@@ -95,7 +91,7 @@ op3 = qwert
 
     def test_invalid(self):
         for (org, mod) in self.inv:
-            self.assertEqual(str(inifile(StringIO(org))), mod)
+            self.assertEqual(str(inifile(StringIO(org)).data), mod)
 
 class suite(unittest.TestSuite):
     def __init__(self):
