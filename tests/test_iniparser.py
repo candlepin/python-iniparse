@@ -21,13 +21,29 @@ but = also me
         sio = StringIO(self.s1)
         p = inifile(sio)
         self.assertEqual(str(p), self.s1)
-        self.assertEqual(p.get('section2').get('just'), 'kidding')
+        self.assertEqual(p.get('section1').get('but'), 'also me')
         self.assertEqual(p.get('section1').get('help'), 'yourself')
-        self.assertEqual(p.get('section1').get('I\'m'), 'desperate')
         self.assertEqual(p.get('section2').get('just'), 'kidding')
+
+        itr = p.finditer('section1')
+        v = itr.next()
+        self.assertEqual(v.get('help'), 'yourself')
+        self.assertEqual(v.get('but'), 'also me')
+        v = itr.next()
+        self.assertEqual(v.get('help'), 'me')
+        self.assertEqual(v.get('I\'m'), 'desperate')
+        self.assertRaises(StopIteration, itr.next)
 
         self.assertRaises(KeyError, p.get, 'section')
         self.assertRaises(KeyError, p.get('section2').get, 'ahem')
+
+        self.assertEqual(p.lookup('section1.help'), 'yourself')
+        self.assertEqual(p.lookup('section1.but'), 'also me')
+        self.assertEqual(p.lookup('section1.I\'m'), 'desperate')
+        self.assertEqual(p.lookup('section2.just'), 'kidding')
+
+        self.assertRaises(KeyError, p.lookup, 'section1.just')
+        self.assertRaises(KeyError, p.lookup, 'section2.help')
 
         #self.assertEqual(p.options.section2.just, 'kidding')
 

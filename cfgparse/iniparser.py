@@ -22,33 +22,35 @@ class line_container(object):
         s = [str(x) for x in self.contents]
         return '\n'.join(s)
 
-    def get(self, key, multiple=True):
-        matches = []
+    def finditer(self, key):
         for x in self.contents[::-1]:
             if hasattr(x, 'name') and x.name==key:
-                if multiple:
-                    matches.append(x)
-                else:
-                    return x
+                yield x
 
-        if not matches:
-            raise KeyError(key)
-        elif len(matches) == 1:
-            return matches[0]
-        else:
-            r = multiple_matches()
-            r.contents.extend(matches)
-            return r
-
-class multiple_matches(line_container):
     def get(self, key):
-        for x in self.contents:
-            try:
-                return x.get(key)
-            except KeyError:
-                pass
+        for x in self.finditer(key):
+            return x
         raise KeyError(key)
 
+    def lookup(self, name):
+        if isinstance(name, basestring):
+            arr = name.split('.')
+            key = arr[0]
+            rest = arr[1:]
+        else:
+            key = name[0]
+            rest = name[1:]
+
+        for m in self.finditer(key):
+            try:
+                if len(rest)==1:
+                    return m.get(rest[0])
+                else:
+                    return m.lookup(rest)
+            except KeyError:
+                continue
+
+        raise KeyError(name)
 
 class section(line_container):
     def __init__(self, lineobj):
@@ -57,7 +59,7 @@ class section(line_container):
         self.name = lineobj.name
 
     def get(self, key):
-        return super(section, self).get(key, multiple=False).value()
+        return super(section, self).get(key).value()
 
 class option(line_container):
     def __init__(self, lineobj):
