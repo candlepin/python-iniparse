@@ -12,11 +12,10 @@ setup(name ='cfgparse',
       url = 'http://www.cs.wisc.edu/~param/software/cfgparse/',
       license = 'MIT',
       long_description = '''
-cfgparse is a Python module that implements basic mechanisms for
-managing configuration information. It is compatible with ConfigParser
-while preserving the structure of INI files (i.e. order of sections &
-options, comments, blank lines are preserved) and allows convenient
-access to data.  Compatibility has been tested using the unit tests
+cfgparse is a Python module that provides mechanisms for managing
+configuration information. It is backward compatible with ConfigParser,
+preserves structure of INI files, and allows convenient access to data.
+Compatibility with ConfigParser has been tested using the unit tests
 included with Python-2.3.4.
       '''.strip(),
       classifiers = [
