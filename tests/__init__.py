@@ -1,13 +1,11 @@
-import unittest
+import unittest, doctest
 
-import test_config
-import test_lines
 import test_iniparser
+from cfgparse import config
 
 class suite(unittest.TestSuite):
     def __init__(self):
         unittest.TestSuite.__init__(self, [
-                test_config.suite,
-                test_lines.suite(),
+                doctest.DocTestSuite(config),
                 test_iniparser.suite(),
         ])

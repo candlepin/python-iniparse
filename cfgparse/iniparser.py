@@ -2,12 +2,174 @@
 # Also supports updates, while preserving structure
 # Backward-compatiable with ConfigParser
 
+import re
 import config
-import line_types
 
-def print_warning(w):
-    #print >>sys.stderr, 'Warning:', w
-    pass
+class line_type(object):
+    line = None
+
+    def __init__(self, line=None):
+        if line is not None:
+            self.line = line.strip('\n')
+
+    # Return the original line for unmodified objects
+    # Otherwise construct using the current attribute values
+    def __str__(self):
+        if self.line is not None:
+            return self.line
+        else:
+            return self.to_string()
+
+    # If an attribute is modified after initialization
+    # set line to None since it is no longer accurate.
+    def __setattr__(self, name, value):
+        if hasattr(self,name):
+            self.__dict__['line'] = None
+        self.__dict__[name] = value
+
+    def to_string(self):
+        raise Exception('This method must be overridden in derived classes')
+
+
+class section_line(line_type):
+    regex =  re.compile(r'^\['
+                        r'(?P<name>[^]]+)'
+                        r'\]\s*'
+                        r'((?P<csep>;|#)(?P<comment>.*))?$')
+
+    def __init__(self, name, comment=None, comment_separator=None,
+                             comment_offset=-1, line=None):
+        super(section_line, self).__init__(line)
+        self.name = name
+        self.comment = comment
+        self.comment_separator = comment_separator
+        self.comment_offset = comment_offset
+
+    def to_string(self):
+        out = '[' + self.name + ']'
+        if self.comment is not None:
+            # try to preserve indentation of comments
+            out = (out+' ').ljust(self.comment_offset)
+            out = out + self.comment_separator + self.comment
+        return out
+
+    def parse(cls, line):
+        m = cls.regex.match(line.rstrip())
+        if m is None:
+            return None
+        return cls(m.group('name'), m.group('comment'),
+                   m.group('csep'), m.start('csep'),
+                   line)
+    parse = classmethod(parse)
+
+
+class option_line(line_type):
+    def __init__(self, name, value, separator='=', comment=None,
+                 comment_separator=None, comment_offset=-1, line=None):
+        super(option_line, self).__init__(line)
+        self.name = name
+        self.value = value
+        self.separator = separator
+        self.comment = comment
+        self.comment_separator = comment_separator
+        self.comment_offset = comment_offset
+
+    def to_string(self):
+        out = '%s %s %s' % (self.name, self.separator, self.value)
+        if self.comment is not None:
+            # try to preserve indentation of comments
+            out = (out+' ').ljust(self.comment_offset)
+            out = out + self.comment_separator + self.comment
+        return out
+
+    regex = re.compile(r'^(?P<name>[^:=\s[][^:=]*)'
+                       r'\s*(?P<sep>[:=])\s*'
+                       r'(?P<value>.*)$')
+
+    def parse(cls, line):
+        m = cls.regex.match(line.rstrip())
+        if m is None:
+            return None
+
+        name = m.group('name').rstrip()
+        value = m.group('value')
+        sep = m.group('sep')
+
+        # comments are not detected in the regex because
+        # ensuring total compatibility with ConfigParser
+        # requires that:
+        #     option = value    ;comment   // value=='value'
+        #     option = value;1  ;comment   // value=='value;1  ;comment'
+        #
+        # Doing this in a regex would be complicated.  I
+        # think this is a bug.  The whole issue of how to
+        # include ';' in the value needs to be addressed.
+        # Also, '#' doesn't mark comments in options...
+
+        coff = value.find(';')
+        if coff != -1 and value[coff-1].isspace():
+            comment = value[coff+1:]
+            csep = value[coff]
+            value = value[:coff].rstrip()
+            coff = m.start('value') + coff
+        else:
+            comment = None
+            csep = None
+            coff = -1
+
+        return cls(name, value, sep, comment, csep, coff, line)
+    parse = classmethod(parse)
+
+
+class comment_line(line_type):
+    regex = re.compile(r'^(?P<csep>[;#]|[rR][eE][mM])'
+                       r'(?P<comment>.*)$')
+
+    def __init__(self, comment='', separator='#', line=None):
+        super(comment_line, self).__init__(line)
+        self.comment = comment
+        self.separator = separator
+
+    def to_string(self):
+        return self.separator + self.comment
+
+    def parse(cls, line):
+        m = cls.regex.match(line.rstrip())
+        if m is None:
+            return None
+        return cls(m.group('comment'), m.group('csep'), line)
+    parse = classmethod(parse)
+
+
+class empty_line(line_type):
+    # could make this a singleton
+    def to_string(self):
+        return ''
+
+    def parse(cls, line):
+        if line.strip(): return None
+        return cls(line)
+    parse = classmethod(parse)
+
+
+class continuation_line(line_type):
+    regex = re.compile(r'^\s+(?P<value>.*)$')
+
+    def __init__(self, value, value_offset=8, line=None):
+        super(continuation_line, self).__init__(line)
+        self.value = value
+        self.value_offset = value_offset
+
+    def to_string(self):
+        return ' '*self.value_offset + self.value
+
+    def parse(cls, line):
+        m = cls.regex.match(line.rstrip())
+        if m is None:
+            return None
+        return cls(m.group('value'), m.start('value'), line)
+    parse = classmethod(parse)
+
 
 class line_container(object):
     def __init__(self, d=None):
@@ -39,7 +201,7 @@ class line_container(object):
         linediff = len(lines) - len(self.contents)
         if linediff > 0:
             for _ in range(linediff):
-                self.add(line_types.continuation_line(''))
+                self.add(continuation_line(''))
         elif linediff < 0:
             self.contents = self.contents[:linediff]
         for i,v in enumerate(lines):
@@ -62,6 +224,7 @@ class line_container(object):
             return x
         raise KeyError(key)
 
+
 class section(config.namespace):
     lineobj = None
     options = None
@@ -70,7 +233,7 @@ class section(config.namespace):
         self.options = {}
 
     def new_value(self, name, data):
-        obj = line_container(line_types.option_line(name, ''))
+        obj = line_container(option_line(name, ''))
         self.lineobj.add(obj)
         self.options[name] = opt = option(obj)
         # we call opt.set() explicitly to automatically
@@ -96,6 +259,7 @@ class section(config.namespace):
     def iterkeys(self):
         return self.options.iterkeys()
 
+
 class option(config.value):
     def __init__(self, lineobj):
         self.lineobj = lineobj
@@ -106,9 +270,11 @@ class option(config.value):
     def set(self, data):
         self.lineobj.value = data
 
+
 def make_comment(line):
-    print_warning('can\'t parse "%s"' % line)
-    return line_types.comment_line(line.rstrip())
+    # print_warning('can\'t parse "%s"' % line)
+    return comment_line(line.rstrip())
+
 
 class inifile(config.namespace):
     data = None
@@ -124,8 +290,8 @@ class inifile(config.namespace):
 
     def new_namespace(self, name):
         if (self.data.contents):
-            self.data.add(line_types.empty_line())
-        obj = line_container(line_types.section_line(name))
+            self.data.add(empty_line())
+        obj = line_container(section_line(name))
         self.data.add(obj)
         self.sections[name] = ns = section(obj)
         return ns
@@ -148,11 +314,9 @@ class inifile(config.namespace):
     def __str__(self):
         return str(self.data)
 
-    line_types = [line_types.empty_line,
-                  line_types.comment_line,
-                  line_types.section_line,
-                  line_types.option_line,
-                  line_types.continuation_line]
+    line_types = [empty_line, comment_line,
+                  section_line, option_line,
+                  continuation_line]
 
     def parse(self, line):
         for linetype in self.line_types:
@@ -170,7 +334,7 @@ class inifile(config.namespace):
         for line in fobj:
             lineobj = self.parse(line)
 
-            if isinstance(lineobj, line_types.continuation_line):
+            if isinstance(lineobj, continuation_line):
                 if cur_option:
                     cur_option.add(lineobj)
                 else:
@@ -179,7 +343,7 @@ class inifile(config.namespace):
             else:
                 cur_option = None
 
-            if isinstance(lineobj, line_types.option_line):
+            if isinstance(lineobj, option_line):
                 if cur_section:
                     cur_section.extend(pending_lines)
                     pending_lines = []
@@ -191,7 +355,7 @@ class inifile(config.namespace):
                     # illegal option line - convert to comment
                     lineobj = make_comment(line)
 
-            if isinstance(lineobj, line_types.section_line):
+            if isinstance(lineobj, section_line):
                 self.data.extend(pending_lines)
                 pending_lines = []
                 cur_section = line_container(lineobj)
@@ -201,10 +365,10 @@ class inifile(config.namespace):
                 else:
                     self.sections[cur_section.name].lineobj = cur_section
 
-            if isinstance(lineobj, (line_types.comment_line, line_types.empty_line)):
+            if isinstance(lineobj, (comment_line, empty_line)):
                 pending_lines.append(lineobj)
 
         self.data.extend(pending_lines)
         if line and line[-1]=='\n':
-            self.data.add(line_types.empty_line())
+            self.data.add(empty_line())
 

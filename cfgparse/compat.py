@@ -1,0 +1,1 @@
+# compatibility interfaces for ConfigParser
