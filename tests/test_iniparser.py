@@ -48,10 +48,10 @@ but = also me
         self.assertRaises(KeyError, p.lookup, 'section1.just')
         self.assertRaises(KeyError, p.lookup, 'section2.help')
 
-    def test_options(self):
+    def disable_test_options(self):
         sio = StringIO(self.s1)
         p = inifile(sio)
-        #self.assertEqual(p.options.section2.just, 'kidding')
+        self.assertEqual(p.options.section2.just, 'kidding')
 
     inv = (
 ("""

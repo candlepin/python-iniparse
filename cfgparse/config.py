@@ -2,56 +2,64 @@
 <description>
 """
 
+# ---- Abstract classes
+
+class value(object):
+    def get(self):
+        raise NotImplementedError()
+
+    def set(self, data):
+        raise NotImplementedError(data)
+
+
 class namespace(object):
-    """Represents a collection of named values
+    def new_value(self, name, data):
+        raise NotImplementedError(name, data)
 
-    >>> n = namespace(datasource())
-    >>> n.x = 7
-    >>> n.x
-    7
-    >>> n.name.first = 'paramjit'
-    >>> n.name.last = 'oberoi'
-    >>> type(n.name)
-    <class 'cfgparse.config.namespace'>
-    >>> n.name.first
-    'paramjit'
-    >>> n.name.last
-    'oberoi'
-    """
+    def new_namespace(self, name):
+        raise NotImplementedError(name)
 
-    def __init__(self, datasource):
-        object.__setattr__(self, '_data', datasource)
+    def rename(self, oldname, newname):
+        raise NotImplementedError(oldname, newname)
 
-    def _new_value(self, name, data):
-        obj = self._data.create_value(name, data)
-        object.__setattr__(self, name, obj)
-        return obj
+    def delete(self, name):
+        raise NotImplementedError(name)
 
-    def _new_namespace(self, name):
-        obj = self._data.create_namespace(name)
-        object.__setattr__(self, name, obj)
-        return obj
+    def get(self, name):
+        return NotImplementedError(name)
 
-    def __getattribute__(self, name):
+    def iterkeys(self):
+        return NotImplementedError()
+
+    def __getattr__(self, name):
         try:
-            obj = object.__getattribute__(self, name)
+            obj = self.get(name)
             if isinstance(obj, value):
                 return obj.get()
             else:
                 return obj
-        except AttributeError:
+        except KeyError:
             return unknown(name, self)
-
 
     def __setattr__(self, name, data):
         try:
-            obj = object.__getattribute__(self, name)
+            object.__getattribute__(self, name)
+            object.__setattr__(self, name, data)
+            return
+        except AttributeError:
+            pass
+
+        try:
+            obj = self.get(name)
             if isinstance(obj, value):
                 obj.set(data)
             else:
-                object.__setattr__(self, name, data)
-        except AttributeError:
-            self._new_value(name, data)
+                raise TypeError("Attempt to set a non-value", name)
+        except KeyError:
+            self.new_value(name, data)
+
+    def __delattr__(self, name):
+        self.delete(name)
 
 
 class unknown(object):
@@ -60,30 +68,16 @@ class unknown(object):
         object.__setattr__(self, 'namespace', namespace)
 
     def __setattr__(self, name, data):
-        obj = self.namespace._new_namespace(self.name)
+        obj = self.namespace.new_namespace(self.name)
         setattr(obj, name, data)
 
 
-class datasource(object):
-    def __init__(self):
-        self._dict = {}
+# ---- Basic implementations of value and namespace
 
-    def create_value(self, name, data):
-        v = value(name, data)
-        self._dict[name] = v
-        return v
-
-    def create_namespace(self, name):
-        d = datasource()
-        n = namespace(d)
-        self._dict[name] = d
-        return n
-
-
-class value(object):
+class basic_value(value):
     """Represents a value
 
-    >>> v = value('user', 'paramjit')
+    >>> v = basic_value('paramjit')
     >>> v.get()
     'paramjit'
     >>> v.set('oberoi')
@@ -91,8 +85,7 @@ class value(object):
     'oberoi'
     """
 
-    def __init__(self, name=None, data=None):
-        self.name = name
+    def __init__(self, data=None):
         self.data = data
 
     def get(self):
@@ -101,5 +94,66 @@ class value(object):
     def set(self, data):
         self.data = data
 
-    def rename(self, name):
-        self.name = name
+
+class basic_namespace(namespace):
+    """Represents a collection of named values
+
+    >>> n = basic_namespace()
+    >>> n.x = 7
+    >>> n.x
+    7
+    >>> n.name.first = 'paramjit'
+    >>> n.name.last = 'oberoi'
+    >>> isinstance(n.name, namespace)
+    True
+    >>> n.name.first
+    'paramjit'
+    >>> n.name.last
+    'oberoi'
+
+    >>> l = list(n.iterkeys())
+    >>> l.sort()
+    >>> l
+    ['name', 'x']
+    >>> l = list(n.name.iterkeys())
+    >>> l.sort()
+    >>> l
+    ['first', 'last']
+
+    >>> n.aaa = 42
+    >>> del n.x
+    >>> n.rename('name', 'user')
+    >>> l = list(n.iterkeys())
+    >>> l.sort()
+    >>> l
+    ['aaa', 'user']
+    """
+
+    # this makes sure that __setattr__ knows this is not a value key
+    named_values = None
+
+    def __init__(self):
+        self.named_values = {}
+
+    def new_value(self, name, data):
+        obj = basic_value(data)
+        self.named_values[name] = obj
+        return obj
+
+    def new_namespace(self, name):
+        obj = basic_namespace()
+        self.named_values[name] = obj
+        return obj
+
+    def rename(self, oldname, newname):
+        self.named_values[newname] = self.named_values[oldname]
+        del self.named_values[oldname]
+
+    def delete(self, name):
+        del self.named_values[name]
+
+    def get(self, name):
+        return self.named_values[name]
+
+    def iterkeys(self):
+        return self.named_values.iterkeys()
