@@ -2,8 +2,12 @@
 # Also supports updates, while preserving structure
 # Backward-compatiable with ConfigParser
 
+import sys
 import StringIO
 import line_types
+
+def print_warning(w):
+    print >>sys.stderr, "Warning:", w
 
 class getter(object):
     def __init__(self, obj):
@@ -22,20 +26,28 @@ class section(object):
 
     # keeping copy of name---if the name is
     # modified, the dict must be a well
-    def add_option(self, l):
-        self.options[l.option] = l
+    def add_option(self, opt):
+        self.options[opt.name] = opt
 
-    def get(self, option):
-        return self.options[option].value
-
-    def get_line(self, option):
-        return self.options[option]
+    def get(self, opt):
+        return self.options[opt].value
 
     def __getitem__(self, key):
         if key in self.options:
             return self.options[key].value
         else:
             raise IndexError, '%s not found' % key
+
+class option(object):
+    def __init__(self, lineobj, cur_section):
+        self.lines = [lineobj]
+        self.section = cur_section
+        self.name = lineobj.option
+        self.value = lineobj.value
+
+    def add_line(self,lineobj):
+        self.lines.append(lineobj)
+        self.value += "\n%s" % lineobj.value
 
 
 class iniparser(object):
@@ -59,20 +71,32 @@ class iniparser(object):
                 return lineobj
         else:
             # can't parse line - convert to comment
+            print_warning('can\'t parse "%s"' % line)
             return line_types.comment_line(line)
 
     def read_file(self, f):
         cur_section = self.sections['DEFAULT']
+        cur_option = None
         for line in f:
             lineobj = self.parse(line)
-            self.lines.append(lineobj)
             if isinstance(lineobj, line_types.option_line):
-                cur_section.add_option(lineobj)
-            elif isinstance(lineobj, line_types.section_line):
-                cur_section = self.sections.get(lineobj.name)
-                if cur_section is None:
-                    cur_section = section()
-                    self.sections[lineobj.name] = cur_section
+                cur_option = option(lineobj, cur_section)
+                cur_section.add_option(cur_option)
+            elif isinstance(lineobj, line_types.continuation_line):
+                if cur_option:
+                    cur_option.add_line(lineobj)
+                else:
+                    # illegal continuation line - convert to comment
+                    print_warning('can\'t parse: "%s"' % lineobj.line)
+                    lineobj = line_types.comment_line(lineobj.line)
+            else:
+                cur_option = None
+                if isinstance(lineobj, line_types.section_line):
+                    cur_section = self.sections.get(lineobj.name)
+                    if cur_section is None:
+                        cur_section = section()
+                        self.sections[lineobj.name] = cur_section
+            self.lines.append(lineobj)
 
     def write_file(self, f):
         for lineobj in self.lines:
