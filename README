@@ -16,7 +16,7 @@ ConfigParser, in addition to having the following features:
 
 * Extensible: It is possible to add other configuration formats,
   and to convert between different formats (as long as the data
-  models are compatiable).
+  models are compatible).
 
 URL: http://www.cs.wisc.edu/~param/software/cfgparse/
 
