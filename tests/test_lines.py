@@ -1,9 +1,5 @@
-#!/usr/bin/env python
-
-import sys, unittest, unittestgui
-from StringIO import StringIO
-
-import iniparser
+import unittest
+from cfgparse import line_types
 
 class test_section_line(unittest.TestCase):
     invalid_lines = [
@@ -19,7 +15,7 @@ class test_section_line(unittest.TestCase):
     ]
     def test_invalid(self):
         for l in self.invalid_lines:
-            p = iniparser.section_line.parse(l)
+            p = line_types.section_line.parse(l)
             self.assertEqual(p, None)
 
     lines = [
@@ -27,12 +23,12 @@ class test_section_line(unittest.TestCase):
         ('[se\ct%[ion\t]' ,     ('se\ct%[ion\t', None, None, -1)),
         ('[sec tion]  ; hi' ,   ('sec tion', ' hi', ';', 12)),
         ('[section]  #oops!' ,  ('section', 'oops!', '#', 11)),
-        ('[section]   ;  ' ,      ('section', '', ';', 12)),
+        ('[section]   ;  ' ,    ('section', '', ';', 12)),
         ('[section]      ' ,    ('section', None, None, -1)),
     ]
     def test_parsing(self):
         for l in self.lines:
-            p = iniparser.section_line.parse(l[0])
+            p = line_types.section_line.parse(l[0])
             self.assertNotEqual(p, None)
             self.assertEqual(p.name, l[1][0])
             self.assertEqual(p.comment, l[1][1])
@@ -41,8 +37,9 @@ class test_section_line(unittest.TestCase):
 
     def test_printing(self):
         for l in self.lines:
-            p = iniparser.section_line.parse(l[0])
-            self.assertEqual(str(p), l[0].strip())
+            p = line_types.section_line.parse(l[0])
+            self.assertEqual(str(p), l[0])
+            self.assertEqual(p.to_string(), l[0].strip())
 
     indent_test_lines = [
         ('[oldname]             ; comment', 'long new name',
@@ -54,7 +51,7 @@ class test_section_line(unittest.TestCase):
     ]
     def test_preserve_indentation(self):
         for l in self.indent_test_lines:
-            p = iniparser.section_line.parse(l[0])
+            p = line_types.section_line.parse(l[0])
             p.name = l[1]
             self.assertEqual(str(p), l[2])
 
@@ -78,7 +75,7 @@ class test_option_line(unittest.TestCase):
     ]
     def test_parsing(self):
         for l in self.lines:
-            p = iniparser.option_line.parse(l[0])
+            p = line_types.option_line.parse(l[0])
             self.assertEqual(p.option, l[1])
             self.assertEqual(p.separator, l[2])
             self.assertEqual(p.value, l[3])
@@ -96,7 +93,7 @@ class test_option_line(unittest.TestCase):
     ]
     def test_invalid(self):
         for l in self.invalid_lines:
-            p = iniparser.option_line.parse(l)
+            p = line_types.option_line.parse(l)
             self.assertEqual(p, None)
 
     print_lines = [
@@ -119,8 +116,9 @@ class test_option_line(unittest.TestCase):
     ]
     def test_printing(self):
         for l in self.print_lines:
-            p = iniparser.option_line.parse(l[0])
-            self.assertEqual(str(p), l[1])
+            p = line_types.option_line.parse(l[0])
+            self.assertEqual(str(p), l[0])
+            self.assertEqual(p.to_string(), l[1])
 
     indent_test_lines = [
         ('option = value   ;comment', 'newoption', 'newval',
@@ -130,7 +128,7 @@ class test_option_line(unittest.TestCase):
     ]
     def test_preserve_indentation(self):
         for l in self.indent_test_lines:
-            p = iniparser.option_line.parse(l[0])
+            p = line_types.option_line.parse(l[0])
             p.option = l[1]
             p.value = l[2]
             self.assertEqual(str(p), l[3])
@@ -143,7 +141,7 @@ class test_comment_line(unittest.TestCase):
     ]
     def test_invalid(self):
         for l in self.invalid_lines:
-            p = iniparser.comment_line.parse(l)
+            p = line_types.comment_line.parse(l)
             self.assertEqual(p, None)
 
     lines = [
@@ -155,20 +153,21 @@ class test_comment_line(unittest.TestCase):
     ]
     def test_parsing(self):
         for l in self.lines:
-            p = iniparser.comment_line.parse(l)
-            self.assertEqual(str(p), l.rstrip())
+            p = line_types.comment_line.parse(l)
+            self.assertEqual(str(p), l)
+            self.assertEqual(p.to_string(), l.rstrip())
 
 class test_other_lines(unittest.TestCase):
     def test_empty(self):
         for s in ['asdf', '; hi', '  #rr', '[sec]', 'opt=val']:
-            self.assertEqual(iniparser.empty_line.parse(s), None)
+            self.assertEqual(line_types.empty_line.parse(s), None)
         for s in ['', '  ', '\t  \t']:
-            self.assertEqual(str(iniparser.empty_line.parse(s)), '')
+            self.assertEqual(str(line_types.empty_line.parse(s)), s)
 
     def test_continuation(self):
         pass
 
-class AllTests(unittest.TestSuite):
+class suite(unittest.TestSuite):
     def __init__(self):
         unittest.TestSuite.__init__(self, [
                 unittest.makeSuite(test_section_line, 'test'),
@@ -176,9 +175,3 @@ class AllTests(unittest.TestSuite):
                 unittest.makeSuite(test_comment_line, 'test'),
                 unittest.makeSuite(test_other_lines, 'test'),
         ])
-
-if __name__ == '__main__':
-    if len(sys.argv) == 2 and sys.argv[1] == '-g':
-        unittestgui.main('test.AllTests')
-    else:
-        unittest.main()
