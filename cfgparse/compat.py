@@ -3,6 +3,12 @@
 # All Rights Reserved.  See LICENSE-PSF & LICENSE for details.
 
 """Compatibility interfaces for ConfigParser
+
+Interfaces of ConfigParser, RawConfigParser and SafeConfigParser
+should be completely identical to the Python standard library
+versions.  Tested with the unit tests included with Python-2.3.4
+
+The underlying ini_namespace object can be accessed as cfg.data
 """
 
 import re

@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from distutils.core import setup
 
 VERSION = '0.1'
@@ -26,7 +28,13 @@ options, comments, blank lines) and allows convenient access to data.
       packages = ['cfgparse'],
       data_files = [
         ('share/doc/cfgparse-%s' % VERSION, ['README', 'LICENSE-PSF',
-                                             'LICENSE', 'Changelog']),
+                                             'LICENSE', 'Changelog',
+                                             'html/index.html',
+                                             'html/style.css',
+                                             'html/cfgparse.html',
+                                             'html/cfgparse.compat.html',
+                                             'html/cfgparse.config.html',
+                                             'html/cfgparse.iniparser.html']),
       ],
 )
 
