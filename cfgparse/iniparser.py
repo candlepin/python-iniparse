@@ -17,14 +17,13 @@ Example:
     ... bar1 = qualia
     ... bar2 = 1977
     ... [foo-ext]
-    ... special = 1
-    ... ''')
+    ... special = 1''')
 
     >>> cfg = ini_namespace(sio)
-    >>> print cfg.special
-    1
     >>> print cfg.foo.bar1
     qualia
+    >>> print cfg['foo-ext'].special
+    1
     >>> cfg.foo.newopt = 'hi!'
 
     >>> print cfg
