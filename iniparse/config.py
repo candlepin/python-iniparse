@@ -46,8 +46,8 @@ Delete items:
 
 Convert it to ini format:
 
-    >>> from cfgparse import iniparser
-    >>> i = iniparser.ini_namespace()
+    >>> from iniparse import ini
+    >>> i = ini.ini_namespace()
     >>> i.import_namespace(n)
 
     >>> print i

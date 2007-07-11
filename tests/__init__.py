@@ -4,16 +4,16 @@
 
 import unittest, doctest
 
-import test_iniparser
+import test_ini
 import test_compat
-from cfgparse import config
-from cfgparse import iniparser
+from iniparse import config
+from iniparse import ini
 
 class suite(unittest.TestSuite):
     def __init__(self):
         unittest.TestSuite.__init__(self, [
                 doctest.DocTestSuite(config),
-                doctest.DocTestSuite(iniparser),
-                test_iniparser.suite(),
+                doctest.DocTestSuite(ini),
+                test_ini.suite(),
                 test_compat.suite(),
         ])

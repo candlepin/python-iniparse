@@ -6,7 +6,7 @@ import ConfigParser
 import StringIO
 import unittest
 
-import cfgparse.compat
+import iniparse.compat
 
 from test import test_support
 
@@ -258,7 +258,7 @@ class TestCaseBase(unittest.TestCase):
 
 
 class ConfigParserTestCase(TestCaseBase):
-    config_class = cfgparse.compat.ConfigParser
+    config_class = iniparse.compat.ConfigParser
 
     def test_interpolation(self):
         cf = self.get_interpolation_config()
@@ -288,7 +288,7 @@ class ConfigParserTestCase(TestCaseBase):
 
 
 class RawConfigParserTestCase(TestCaseBase):
-    config_class = cfgparse.compat.RawConfigParser
+    config_class = iniparse.compat.RawConfigParser
 
     def test_interpolation(self):
         cf = self.get_interpolation_config()
@@ -312,7 +312,7 @@ class RawConfigParserTestCase(TestCaseBase):
 
 
 class SafeConfigParserTestCase(ConfigParserTestCase):
-    config_class = cfgparse.compat.SafeConfigParser
+    config_class = iniparse.compat.SafeConfigParser
 
     def test_safe_interpolation(self):
         # See http://www.python.org/sf/511737

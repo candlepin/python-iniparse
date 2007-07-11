@@ -19,11 +19,11 @@ from ConfigParser import DuplicateSectionError,    \
                   InterpolationSyntaxError,        \
                   DEFAULTSECT, MAX_INTERPOLATION_DEPTH
 
-import iniparser
+import ini
 
 class RawConfigParser(object):
     def __init__(self, defaults=None):
-        self.data = iniparser.ini_namespace(defaults=defaults)
+        self.data = ini.ini_namespace(defaults=defaults)
 
     def defaults(self):
         d = {}
