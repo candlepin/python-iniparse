@@ -1,4 +1,4 @@
-include cfgparse/*.py
+include iniparse/*.py
 include tests/*.py
 include html/*.html
 include html/style.css

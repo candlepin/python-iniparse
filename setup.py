@@ -9,7 +9,7 @@ setup(name ='cfgparse',
       description = 'Accessing and Modifying Configuration Data',
       author = 'Paramjit Oberoi',
       author_email = 'param@cs.wisc.edu',
-      url = 'http://www.cs.wisc.edu/~param/software/cfgparse/',
+      url = 'http://code.google.com/p/iniparse/',
       license = 'MIT',
       long_description = '''
 cfgparse is a Python module that provides mechanisms for managing
@@ -27,16 +27,16 @@ included with Python-2.3.4.
         'Programming Language :: Python',
         'Topic :: Software Development :: Libraries :: Python Modules',
       ],
-      packages = ['cfgparse'],
+      packages = ['iniparse'],
       data_files = [
-        ('share/doc/cfgparse-%s' % VERSION, ['README', 'LICENSE-PSF',
+        ('share/doc/iniparse-%s' % VERSION, ['README', 'LICENSE-PSF',
                                              'LICENSE', 'Changelog',
                                              'html/index.html',
                                              'html/style.css',
-                                             'html/cfgparse.html',
-                                             'html/cfgparse.compat.html',
-                                             'html/cfgparse.config.html',
-                                             'html/cfgparse.iniparser.html']),
+                                             'html/iniparse.html',
+                                             'html/iniparse.compat.html',
+                                             'html/iniparse.config.html',
+                                             'html/iniparse.ini.html']),
       ],
 )
 

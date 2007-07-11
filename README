@@ -1,4 +1,4 @@
-cfgparse is a Python module that provides mechanisms for managing
+iniparse is a Python module that provides mechanisms for managing
 configuration information. It is backward compatible with
 ConfigParser, in addition to having the following features:
 
@@ -18,10 +18,10 @@ ConfigParser, in addition to having the following features:
   and to convert between different formats (as long as the data
   models are compatible).
 
-URL: http://www.cs.wisc.edu/~param/software/cfgparse/
+URL: http://code.google.com/p/iniparse/
 
 Contact: Paramjit Oberoi <param.cs.wisc.edu>
 
 Copyright (c) 2001, 2002, 2003 Python Software Foundation
-Copyright (c) 2004 Paramjit Oberoi <param.cs.wisc.edu>
+Copyright (c) 2004-2007 Paramjit Oberoi <param.cs.wisc.edu>
 All Rights Reserved.  See LICENSE-PSF & LICENSE for details.

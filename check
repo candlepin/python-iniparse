@@ -1,2 +1,2 @@
-pychecker --stdlib cfgparse/*py tests/*py
+pychecker --stdlib iniparse/*py tests/*py
 
