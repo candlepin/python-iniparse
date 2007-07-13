@@ -8,16 +8,16 @@
 * A VALUE is a basic value, like 3.1415, or 'Hello World!'
 * A NAME identifies a value or namespace within a namespace
 
-The namespace class is an abstract class that defines the basic
-interface implemented by all namespace objects.  Two concrete
-implementations are include: basic_namespace and ini_namespace.
+The ConfigNamespace class is an abstract class that defines the
+basic interface implemented by all config namespace objects.  Two
+concrete implementations are included: BasicConfig and INIConfig.
 
 Each is described in detail elsewhere.  However, here's an
 example of the capabilities available:
 
-Create namespace and populate it:
+Create config namespace and populate it:
 
-    >>> n = basic_namespace()
+    >>> n = BasicConfig()
     >>> n.playlist.expand_playlist = True
     >>> n.ui.display_clock = True
     >>> n.ui.display_qlength = True
@@ -47,7 +47,7 @@ Delete items:
 Convert it to ini format:
 
     >>> from iniparse import ini
-    >>> i = ini.ini_namespace()
+    >>> i = ini.INIConfig()
     >>> i.import_namespace(n)
 
     >>> print i
@@ -60,7 +60,7 @@ Convert it to ini format:
 # ---- Abstract classes
 
 
-class namespace(object):
+class ConfigNamespace(object):
     def __getitem__(self, key):
         return NotImplementedError(key)
 
@@ -80,7 +80,7 @@ class namespace(object):
         try:
             return self.__getitem__(name)
         except KeyError:
-            return unknown(name, self)
+            return Undefined(name, self)
 
     def __setattr__(self, name, value):
         try:
@@ -100,7 +100,7 @@ class namespace(object):
     def import_namespace(self, ns):
         for name in ns:
             value = ns[name]
-            if isinstance(value, namespace):
+            if isinstance(value, ConfigNamespace):
                 try:
                     myns = self[name]
                     if not isinstance(myns, namespace):
@@ -111,7 +111,14 @@ class namespace(object):
             else:
                 self[name] = value
 
-class unknown(object):
+class Undefined(object):
+    """Helper class used to hold undefined names until assignment.
+    
+    This class helps create any undefined subsections when an
+    assignment is made to a nested value.  For example, if the
+    statement is "cfg.a.b.c = 42", but "cfg.a.b" does not exist yet.
+    """
+    
     def __init__(self, name, namespace):
         object.__setattr__(self, 'name', name)
         object.__setattr__(self, 'namespace', namespace)
@@ -124,12 +131,12 @@ class unknown(object):
 # ---- Basic implementation of namespace
 
 
-class basic_namespace(namespace):
+class BasicConfig(ConfigNamespace):
     """Represents a collection of named values
 
     Values are added using dotted notation:
 
-    >>> n = basic_namespace()
+    >>> n = BasicConfig()
     >>> n.x = 7
     >>> n.name.first = 'paramjit'
     >>> n.name.last = 'oberoi'
@@ -164,7 +171,7 @@ class basic_namespace(namespace):
 
     Nested namepsaces are also namespaces:
 
-    >>> isinstance(n.name, namespace)
+    >>> isinstance(n.name, ConfigNamespace)
     True
     >>> print n.name
     first = paramjit
@@ -181,7 +188,7 @@ class basic_namespace(namespace):
     ... have_python
     ... data.secret.password = goodness=gracious me
     ... ''')
-    >>> n = basic_namespace()
+    >>> n = BasicConfig()
     >>> n.readfp(sio)
     >>> print n
     complexity = medium
@@ -215,7 +222,7 @@ class basic_namespace(namespace):
         keys.sort()
         for name in keys:
             value = self._data[name]
-            if isinstance(value, namespace):
+            if isinstance(value, ConfigNamespace):
                 lines.append(value.__str__(prefix='%s%s.' % (prefix,name)))
             else:
                 if value is None:
@@ -225,7 +232,7 @@ class basic_namespace(namespace):
         return '\n'.join(lines)
 
     def new_namespace(self, name):
-        obj = basic_namespace()
+        obj = BasicConfig()
         self._data[name] = obj
         return obj
 
@@ -246,7 +253,7 @@ class basic_namespace(namespace):
             for n in name_components[:-1]:
                 try:
                     ns = ns[n]
-                    if not isinstance(ns, namespace):
+                    if not isinstance(ns, ConfigNamespace):
                         raise TypeError('value-namespace conflict', n)
                 except KeyError:
                     ns = ns.new_namespace(n)

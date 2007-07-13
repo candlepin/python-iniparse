@@ -19,7 +19,7 @@ Example:
     ... [foo-ext]
     ... special = 1''')
 
-    >>> cfg = ini_namespace(sio)
+    >>> cfg = INIConfig(sio)
     >>> print cfg.foo.bar1
     qualia
     >>> print cfg['foo-ext'].special
@@ -37,7 +37,7 @@ Example:
 
 """
 
-# An iniparser that supports ordered sections/options
+# An ini parser that supports ordered sections/options
 # Also supports updates, while preserving structure
 # Backward-compatiable with ConfigParser
 
@@ -46,7 +46,7 @@ import config
 from sets import Set
 from ConfigParser import DEFAULTSECT, ParsingError, MissingSectionHeaderError
 
-class line_type(object):
+class LineType(object):
     line = None
 
     def __init__(self, line=None):
@@ -72,7 +72,7 @@ class line_type(object):
         raise Exception('This method must be overridden in derived classes')
 
 
-class section_line(line_type):
+class SectionLine(LineType):
     regex =  re.compile(r'^\['
                         r'(?P<name>[^]]+)'
                         r'\]\s*'
@@ -80,7 +80,7 @@ class section_line(line_type):
 
     def __init__(self, name, comment=None, comment_separator=None,
                              comment_offset=-1, line=None):
-        super(section_line, self).__init__(line)
+        super(SectionLine, self).__init__(line)
         self.name = name
         self.comment = comment
         self.comment_separator = comment_separator
@@ -104,10 +104,10 @@ class section_line(line_type):
     parse = classmethod(parse)
 
 
-class option_line(line_type):
+class OptionLine(LineType):
     def __init__(self, name, value, separator='=', comment=None,
                  comment_separator=None, comment_offset=-1, line=None):
-        super(option_line, self).__init__(line)
+        super(OptionLine, self).__init__(line)
         self.name = name
         self.value = value
         self.separator = separator
@@ -162,12 +162,12 @@ class option_line(line_type):
     parse = classmethod(parse)
 
 
-class comment_line(line_type):
+class CommentLine(LineType):
     regex = re.compile(r'^(?P<csep>[;#]|[rR][eE][mM])'
                        r'(?P<comment>.*)$')
 
     def __init__(self, comment='', separator='#', line=None):
-        super(comment_line, self).__init__(line)
+        super(CommentLine, self).__init__(line)
         self.comment = comment
         self.separator = separator
 
@@ -182,7 +182,7 @@ class comment_line(line_type):
     parse = classmethod(parse)
 
 
-class empty_line(line_type):
+class EmptyLine(LineType):
     # could make this a singleton
     def to_string(self):
         return ''
@@ -193,11 +193,11 @@ class empty_line(line_type):
     parse = classmethod(parse)
 
 
-class continuation_line(line_type):
+class ContinuationLine(LineType):
     regex = re.compile(r'^\s+(?P<value>.*)$')
 
     def __init__(self, value, value_offset=8, line=None):
-        super(continuation_line, self).__init__(line)
+        super(ContinuationLine, self).__init__(line)
         self.value = value
         self.value_offset = value_offset
 
@@ -212,7 +212,7 @@ class continuation_line(line_type):
     parse = classmethod(parse)
 
 
-class line_container(object):
+class LineContainer(object):
     def __init__(self, d=None):
         self.contents = []
         if d:
@@ -242,7 +242,7 @@ class line_container(object):
         linediff = len(lines) - len(self.contents)
         if linediff > 0:
             for _ in range(linediff):
-                self.add(continuation_line(''))
+                self.add(ContinuationLine(''))
         elif linediff < 0:
             self.contents = self.contents[:linediff]
         for i,v in enumerate(lines):
@@ -266,7 +266,7 @@ class line_container(object):
         raise KeyError(key)
 
 
-class section(config.namespace):
+class INISection(config.ConfigNamespace):
     _lines = None
     _options = None
     _defaults = None
@@ -294,10 +294,10 @@ class section(config.namespace):
         else: xkey = key
         if xkey not in self._options:
             # create a dummy object - value may have multiple lines
-            obj = line_container(option_line(key, ''))
+            obj = LineContainer(OptionLine(key, ''))
             self._lines[-1].add(obj)
             self._options[xkey] = obj
-        # the set_value() function in line_container
+        # the set_value() function in LineContainer
         # automatically handles multi-line values
         self._options[xkey].value = value
 
@@ -306,7 +306,7 @@ class section(config.namespace):
         for l in self._lines:
             remaining = []
             for o in l.contents:
-                if isinstance(o, line_container):
+                if isinstance(o, LineContainer):
                     n = o.name
                     if self._optionxform: n = self._optionxform(n)
                     if key != n: remaining.append(o)
@@ -319,7 +319,7 @@ class section(config.namespace):
         d = Set()
         for l in self._lines:
             for x in l.contents:
-                if isinstance(x, line_container):
+                if isinstance(x, LineContainer):
                     if self._optionxform:
                         ans = self._optionxform(x.name)
                     else:
@@ -338,10 +338,10 @@ class section(config.namespace):
 
 
 def make_comment(line):
-    return comment_line(line.rstrip())
+    return CommentLine(line.rstrip())
 
 
-class ini_namespace(config.namespace):
+class INIConfig(config.ConfigNamespace):
     _data = None
     _sections = None
     _defaults = None
@@ -350,13 +350,13 @@ class ini_namespace(config.namespace):
     _parse_exc = None
     def __init__(self, fp=None, defaults = None, parse_exc=True,
                  optionxform=str.lower, sectionxform=None):
-        self._data = line_container()
+        self._data = LineContainer()
         self._parse_exc = parse_exc
         self._optionxform = optionxform
         self._sectionxform = sectionxform
         self._sections = {}
         if defaults is None: defaults = {}
-        self._defaults = section(line_container(), optionxform=optionxform)
+        self._defaults = INISection(LineContainer(), optionxform=optionxform)
         for name, value in defaults.iteritems():
             self._defaults[name] = value
         if fp is not None:
@@ -379,32 +379,32 @@ class ini_namespace(config.namespace):
     def __iter__(self):
         d = Set()
         for x in self._data.contents:
-            if isinstance(x, line_container):
+            if isinstance(x, LineContainer):
                 if x.name not in d:
                     yield x.name
                     d.add(x.name)
 
     def new_namespace(self, name):
         if self._data.contents:
-            self._data.add(empty_line())
-        obj = line_container(section_line(name))
+            self._data.add(EmptyLine())
+        obj = LineContainer(SectionLine(name))
         self._data.add(obj)
         if self._sectionxform: name = self._sectionxform(name)
         if name in self._sections:
             ns = self._sections[name]
             ns._lines.append(obj)
         else:
-            ns = section(obj, defaults=self._defaults,
-                              optionxform=self._optionxform)
+            ns = INISection(obj, defaults=self._defaults,
+                            optionxform=self._optionxform)
             self._sections[name] = ns
         return ns
 
     def __str__(self):
         return str(self._data)
 
-    _line_types = [empty_line, comment_line,
-                   section_line, option_line,
-                   continuation_line]
+    _line_types = [EmptyLine, CommentLine,
+                   SectionLine, OptionLine,
+                   ContinuationLine]
 
     def _parse(self, line):
         for linetype in self._line_types:
@@ -432,7 +432,7 @@ class ini_namespace(config.namespace):
             linecount += 1
 
             if not cur_section and not isinstance(lineobj,
-                                (comment_line, empty_line, section_line)):
+                                (CommentLine, EmptyLine, SectionLine)):
                 if self._parse_exc:
                     raise MissingSectionHeaderError(fname, linecount, line)
                 else:
@@ -444,7 +444,7 @@ class ini_namespace(config.namespace):
                     exc.append(linecount, line)
                 lineobj = make_comment(line)
 
-            if isinstance(lineobj, continuation_line):
+            if isinstance(lineobj, ContinuationLine):
                 if cur_option:
                     cur_option.add(lineobj)
                 else:
@@ -457,10 +457,10 @@ class ini_namespace(config.namespace):
                 cur_option = None
                 cur_option_name = None
 
-            if isinstance(lineobj, option_line):
+            if isinstance(lineobj, OptionLine):
                 cur_section.extend(pending_lines)
                 pending_lines = []
-                cur_option = line_container(lineobj)
+                cur_option = LineContainer(lineobj)
                 cur_section.add(cur_option)
                 if self._optionxform:
                     cur_option_name = self._optionxform(cur_option.name)
@@ -472,10 +472,10 @@ class ini_namespace(config.namespace):
                     optobj = self._sections[cur_section_name]
                 optobj._options[cur_option_name] = cur_option
 
-            if isinstance(lineobj, section_line):
+            if isinstance(lineobj, SectionLine):
                 self._data.extend(pending_lines)
                 pending_lines = []
-                cur_section = line_container(lineobj)
+                cur_section = LineContainer(lineobj)
                 self._data.add(cur_section)
                 if cur_section.name == DEFAULTSECT:
                     self._defaults._lines.append(cur_section)
@@ -487,17 +487,17 @@ class ini_namespace(config.namespace):
                         cur_section_name = cur_section.name
                     if not self._sections.has_key(cur_section_name):
                         self._sections[cur_section_name] = \
-                                section(cur_section, defaults=self._defaults,
-                                        optionxform=self._optionxform)
+                                INISection(cur_section, defaults=self._defaults,
+                                           optionxform=self._optionxform)
                     else:
                         self._sections[cur_section_name]._lines.append(cur_section)
 
-            if isinstance(lineobj, (comment_line, empty_line)):
+            if isinstance(lineobj, (CommentLine, EmptyLine)):
                 pending_lines.append(lineobj)
 
         self._data.extend(pending_lines)
         if line and line[-1]=='\n':
-            self._data.add(empty_line())
+            self._data.add(EmptyLine())
 
         if exc:
             raise exc

@@ -8,7 +8,7 @@ Interfaces of ConfigParser, RawConfigParser and SafeConfigParser
 should be completely identical to the Python standard library
 versions.  Tested with the unit tests included with Python-2.3.4
 
-The underlying ini_namespace object can be accessed as cfg.data
+The underlying INIConfig object can be accessed as cfg.data
 """
 
 import re
@@ -23,7 +23,7 @@ import ini
 
 class RawConfigParser(object):
     def __init__(self, defaults=None):
-        self.data = ini.ini_namespace(defaults=defaults)
+        self.data = ini.INIConfig(defaults=defaults)
 
     def defaults(self):
         d = {}
@@ -176,7 +176,9 @@ class RawConfigParser(object):
         return True
 
 
-class cfg_dict(object):
+class ConfigDict(object):
+    """Present a dict interface to a ini section."""
+    
     def __init__(self, cfg, section, vars):
         self.cfg = cfg
         self.section = section
@@ -211,7 +213,7 @@ class ConfigParser(RawConfigParser):
         if raw:
             return value
         else:
-            d = cfg_dict(self, section, vars)
+            d = ConfigDict(self, section, vars)
             return self._interpolate(section, option, value, d)
 
     def _interpolate(self, section, option, rawval, vars):
@@ -258,7 +260,7 @@ class ConfigParser(RawConfigParser):
         if "__name__" in options:
             options.remove("__name__")
 
-        d = cfg_dict(self, section, vars)
+        d = ConfigDict(self, section, vars)
         if raw:
             return [(option, d[option])
                     for option in options]
