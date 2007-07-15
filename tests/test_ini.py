@@ -251,6 +251,15 @@ just = kidding
 [section1]
 but = also me
 """)
+        del p.section2
+        self.assertEqual(str(p), """
+[section1]
+I'm  = desperate     ; really!
+
+
+[section1]
+but = also me
+""")
 
     def check_order(self, c):
         sio = StringIO(self.s1)

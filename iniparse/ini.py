@@ -373,7 +373,8 @@ class INIConfig(config.ConfigNamespace):
 
     def __delitem__(self, key):
         if self._sectionxform: key = self._sectionxform(key)
-        self._data.contents.remove(self._sections[key]._lineobj)
+        for line in self._sections[key]._lines:
+            self._data.contents.remove(line)
         del self._sections[key]
 
     def __iter__(self):
