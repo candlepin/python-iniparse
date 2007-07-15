@@ -48,7 +48,7 @@ Convert it to ini format:
 
     >>> from iniparse import ini
     >>> i = ini.INIConfig()
-    >>> i.import_namespace(n)
+    >>> i.import_config(n)
 
     >>> print i
     [ui]
@@ -97,7 +97,7 @@ class ConfigNamespace(object):
         except AttributeError:
             self.__delitem__(name)
 
-    def import_namespace(self, ns):
+    def import_config(self, ns):
         for name in ns:
             value = ns[name]
             if isinstance(value, ConfigNamespace):
@@ -107,7 +107,7 @@ class ConfigNamespace(object):
                         raise TypeError('value-namespace conflict')
                 except KeyError:
                     myns = self.new_namespace(name)
-                myns.import_namespace(value)
+                myns.import_config(value)
             else:
                 self[name] = value
 
