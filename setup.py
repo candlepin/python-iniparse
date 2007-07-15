@@ -2,22 +2,21 @@
 
 from distutils.core import setup
 
-VERSION = '0.1'
+VERSION = '0.2'
 
-setup(name ='cfgparse',
+setup(name ='iniparse',
       version = VERSION,
-      description = 'Accessing and Modifying Configuration Data',
+      description = 'Accessing and Modifying INI files',
       author = 'Paramjit Oberoi',
       author_email = 'param@cs.wisc.edu',
       url = 'http://code.google.com/p/iniparse/',
       license = 'MIT',
-      long_description = '''
-cfgparse is a Python module that provides mechanisms for managing
-configuration information. It is backward compatible with ConfigParser,
-preserves structure of INI files, and allows convenient access to data.
-Compatibility with ConfigParser has been tested using the unit tests
-included with Python-2.3.4.
-      '''.strip(),
+      long_description = '''\
+iniparse is an INI parser for  Python which is API compatible
+with the standard library's ConfigParser, preserves structure of INI
+files (order of sections & options, indentation, comments, and blank
+lines are preserved when data is updated), and is more convenient to
+use.'''.strip(),
       classifiers = [
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
@@ -33,10 +32,7 @@ included with Python-2.3.4.
                                              'LICENSE', 'Changelog',
                                              'html/index.html',
                                              'html/style.css',
-                                             'html/iniparse.html',
-                                             'html/iniparse.compat.html',
-                                             'html/iniparse.config.html',
-                                             'html/iniparse.ini.html']),
+                                             ]),
       ],
 )
 
