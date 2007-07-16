@@ -1,12 +1,6 @@
-# Copyright (c) 2001, 2002, 2003 Python Software Foundation
-# Copyright (c) 2004 Paramjit Oberoi <param.cs.wisc.edu>
-# All Rights Reserved.  See LICENSE-PSF & LICENSE for details.
-
-import ConfigParser
+from iniparse import compat as ConfigParser
 import StringIO
 import unittest
-
-import iniparse.compat
 
 from test import test_support
 
@@ -121,6 +115,16 @@ class TestCaseBase(unittest.TestCase):
         self.failUnless(cf.has_option("section", "Key"))
 
 
+    def test_default_case_sensitivity(self):
+        cf = self.newconfig({"foo": "Bar"})
+        self.assertEqual(
+            cf.get("DEFAULT", "Foo"), "Bar",
+            "could not locate option, expecting case-insensitive option names")
+        cf = self.newconfig({"Foo": "Bar"})
+        self.assertEqual(
+            cf.get("DEFAULT", "Foo"), "Bar",
+            "could not locate option, expecting case-insensitive defaults")
+
     def test_parse_errors(self):
         self.newconfig()
         self.parse_error(ConfigParser.ParsingError,
@@ -215,6 +219,46 @@ class TestCaseBase(unittest.TestCase):
             " long line"
             )
 
+    def test_set_string_types(self):
+        cf = self.fromstring("[sect]\n"
+                             "option1=foo\n")
+        # Check that we don't get an exception when setting values in
+        # an existing section using strings:
+        class mystr(str):
+            pass
+        cf.set("sect", "option1", "splat")
+        cf.set("sect", "option1", mystr("splat"))
+        cf.set("sect", "option2", "splat")
+        cf.set("sect", "option2", mystr("splat"))
+        try:
+            unicode
+        except NameError:
+            pass
+        else:
+            cf.set("sect", "option1", unicode("splat"))
+            cf.set("sect", "option2", unicode("splat"))
+
+    def test_read_returns_file_list(self):
+        file1 = test_support.findfile("cfgparser.1")
+        # check when we pass a mix of readable and non-readable files:
+        cf = self.newconfig()
+        parsed_files = cf.read([file1, "nonexistant-file"])
+        self.assertEqual(parsed_files, [file1])
+        self.assertEqual(cf.get("Foo Bar", "foo"), "newbar")
+        # check when we pass only a filename:
+        cf = self.newconfig()
+        parsed_files = cf.read(file1)
+        self.assertEqual(parsed_files, [file1])
+        self.assertEqual(cf.get("Foo Bar", "foo"), "newbar")
+        # check when we pass only missing files:
+        cf = self.newconfig()
+        parsed_files = cf.read(["nonexistant-file"])
+        self.assertEqual(parsed_files, [])
+        # check when we pass no files:
+        cf = self.newconfig()
+        parsed_files = cf.read([])
+        self.assertEqual(parsed_files, [])
+
     # shared by subclasses
     def get_interpolation_config(self):
         return self.fromstring(
@@ -226,11 +270,11 @@ class TestCaseBase(unittest.TestCase):
             "with11=%(with10)s\n"
             "with10=%(with9)s\n"
             "with9=%(with8)s\n"
-            "with8=%(with7)s\n"
-            "with7=%(with6)s\n"
+            "with8=%(With7)s\n"
+            "with7=%(WITH6)s\n"
             "with6=%(with5)s\n"
-            "with5=%(with4)s\n"
-            "with4=%(with3)s\n"
+            "With5=%(with4)s\n"
+            "WITH4=%(with3)s\n"
             "with3=%(with2)s\n"
             "with2=%(with1)s\n"
             "with1=with\n"
@@ -258,7 +302,7 @@ class TestCaseBase(unittest.TestCase):
 
 
 class ConfigParserTestCase(TestCaseBase):
-    config_class = iniparse.compat.ConfigParser
+    config_class = ConfigParser.ConfigParser
 
     def test_interpolation(self):
         cf = self.get_interpolation_config()
@@ -286,9 +330,30 @@ class ConfigParserTestCase(TestCaseBase):
                                  ('key', '|value|'),
                                  ('name', 'value')])
 
+    def test_set_nonstring_types(self):
+        cf = self.newconfig()
+        cf.add_section('non-string')
+        cf.set('non-string', 'int', 1)
+        cf.set('non-string', 'list', [0, 1, 1, 2, 3, 5, 8, 13, '%('])
+        cf.set('non-string', 'dict', {'pi': 3.14159, '%(': 1,
+                                      '%(list)': '%(list)'})
+        cf.set('non-string', 'string_with_interpolation', '%(list)s')
+        self.assertEqual(cf.get('non-string', 'int', raw=True), 1)
+        self.assertRaises(TypeError, cf.get, 'non-string', 'int')
+        self.assertEqual(cf.get('non-string', 'list', raw=True),
+                         [0, 1, 1, 2, 3, 5, 8, 13, '%('])
+        self.assertRaises(TypeError, cf.get, 'non-string', 'list')
+        self.assertEqual(cf.get('non-string', 'dict', raw=True),
+                         {'pi': 3.14159, '%(': 1, '%(list)': '%(list)'})
+        self.assertRaises(TypeError, cf.get, 'non-string', 'dict')
+        self.assertEqual(cf.get('non-string', 'string_with_interpolation',
+                                raw=True), '%(list)s')
+        self.assertRaises(ValueError, cf.get, 'non-string',
+                          'string_with_interpolation', raw=False)
+
 
 class RawConfigParserTestCase(TestCaseBase):
-    config_class = iniparse.compat.RawConfigParser
+    config_class = ConfigParser.RawConfigParser
 
     def test_interpolation(self):
         cf = self.get_interpolation_config()
@@ -310,9 +375,20 @@ class RawConfigParserTestCase(TestCaseBase):
                                  ('key', '|%(name)s|'),
                                  ('name', 'value')])
 
+    def test_set_nonstring_types(self):
+        cf = self.newconfig()
+        cf.add_section('non-string')
+        cf.set('non-string', 'int', 1)
+        cf.set('non-string', 'list', [0, 1, 1, 2, 3, 5, 8, 13])
+        cf.set('non-string', 'dict', {'pi': 3.14159})
+        self.assertEqual(cf.get('non-string', 'int'), 1)
+        self.assertEqual(cf.get('non-string', 'list'),
+                         [0, 1, 1, 2, 3, 5, 8, 13])
+        self.assertEqual(cf.get('non-string', 'dict'), {'pi': 3.14159})
+
 
 class SafeConfigParserTestCase(ConfigParserTestCase):
-    config_class = iniparse.compat.SafeConfigParser
+    config_class = ConfigParser.SafeConfigParser
 
     def test_safe_interpolation(self):
         # See http://www.python.org/sf/511737
@@ -324,6 +400,25 @@ class SafeConfigParserTestCase(ConfigParserTestCase):
         self.assertEqual(cf.get("section", "ok"), "xxx/%s")
         self.assertEqual(cf.get("section", "not_ok"), "xxx/xxx/%s")
 
+    def test_set_nonstring_types(self):
+        cf = self.fromstring("[sect]\n"
+                             "option1=foo\n")
+        # Check that we get a TypeError when setting non-string values
+        # in an existing section:
+        self.assertRaises(TypeError, cf.set, "sect", "option1", 1)
+        self.assertRaises(TypeError, cf.set, "sect", "option1", 1.0)
+        self.assertRaises(TypeError, cf.set, "sect", "option1", object())
+        self.assertRaises(TypeError, cf.set, "sect", "option2", 1)
+        self.assertRaises(TypeError, cf.set, "sect", "option2", 1.0)
+        self.assertRaises(TypeError, cf.set, "sect", "option2", object())
+
+
+def test_main():
+    test_support.run_unittest(
+        ConfigParserTestCase,
+        RawConfigParserTestCase,
+        SafeConfigParserTestCase
+    )
 
 class suite(unittest.TestSuite):
     def __init__(self):
@@ -333,3 +428,5 @@ class suite(unittest.TestSuite):
                 unittest.makeSuite(SafeConfigParserTestCase, 'test'),
         ])
 
+if __name__ == "__main__":
+    test_main()

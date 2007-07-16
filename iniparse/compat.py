@@ -18,6 +18,11 @@ from ConfigParser import DuplicateSectionError,    \
                   InterpolationDepthError,         \
                   InterpolationSyntaxError,        \
                   DEFAULTSECT, MAX_INTERPOLATION_DEPTH
+                  
+# These are imported only for compatiability.
+# The code below does not reference them directly.
+from ConfigParser import Error, InterpolationError, \
+                  MissingSectionHeaderError, ParsingError
 
 import ini
 
@@ -74,6 +79,7 @@ class RawConfigParser(object):
         configuration files in the list will be read.  A single
         filename may also be given.
         """
+        files_read = []
         if isinstance(filenames, basestring):
             filenames = [filenames]
         for filename in filenames:
@@ -81,8 +87,10 @@ class RawConfigParser(object):
                 fp = open(filename)
             except IOError:
                 continue
+            files_read.append(filename)
             self.data.readfp(fp)
             fp.close()
+        return files_read
 
     def readfp(self, fp, filename=None):
         """Like read() but the argument must be a file-like object.
@@ -222,7 +230,7 @@ class ConfigParser(RawConfigParser):
         depth = MAX_INTERPOLATION_DEPTH
         while depth:                    # Loop through this until it's done
             depth -= 1
-            if value.find("%(") != -1:
+            if "%(" in value:
                 try:
                     value = value % vars
                 except KeyError, e:
@@ -270,6 +278,10 @@ class ConfigParser(RawConfigParser):
 
 
 class SafeConfigParser(ConfigParser):
+    def set(self, section, option, value):
+        if not isinstance(value, basestring):
+            raise TypeError("option values must be strings")
+        ConfigParser.set(self, section, option, value)
 
     def _interpolate(self, section, option, rawval, vars):
         # do the string interpolation

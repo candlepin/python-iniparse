@@ -215,6 +215,7 @@ class ContinuationLine(LineType):
 class LineContainer(object):
     def __init__(self, d=None):
         self.contents = []
+        self.orgvalue = None
         if d:
             if isinstance(d, list): self.extend(d)
             else: self.add(d)
@@ -232,12 +233,15 @@ class LineContainer(object):
         self.contents[0].name = data
 
     def get_value(self):
-        if len(self.contents) == 1:
+        if self.orgvalue is not None:
+            return self.orgvalue
+        elif len(self.contents) == 1:
             return self.contents[0].value
         else:
             return '\n'.join([str(x.value) for x in self.contents])
 
     def set_value(self, data):
+        self.orgvalue = data
         lines = str(data).split('\n')
         linediff = len(lines) - len(self.contents)
         if linediff > 0:
