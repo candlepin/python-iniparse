@@ -29,6 +29,8 @@ import ini
 class RawConfigParser(object):
     def __init__(self, defaults=None):
         self.data = ini.INIConfig(defaults=defaults)
+        if self.optionxform is not self.data._optionxform:
+            self.data._optionxform = self.optionxform
 
     def defaults(self):
         d = {}
