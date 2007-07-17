@@ -20,3 +20,6 @@ archive:
 
 buildrpm: archive
 	rpmbuild -ta ${PKGNAME}-$(VERSION).tar.gz
+
+pychecker:
+	pychecker --stdlib iniparse/*py tests/*py
