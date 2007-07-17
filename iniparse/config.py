@@ -103,7 +103,7 @@ class ConfigNamespace(object):
             if isinstance(value, ConfigNamespace):
                 try:
                     myns = self[name]
-                    if not isinstance(myns, namespace):
+                    if not isinstance(myns, ConfigNamespace):
                         raise TypeError('value-namespace conflict')
                 except KeyError:
                     myns = self.new_namespace(name)

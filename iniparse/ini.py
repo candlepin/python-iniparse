@@ -286,9 +286,9 @@ def _make_xform_property(myattrname, srcattrname=None):
     def setfn(self, value):
         srcobj = getattr(self, private_srcname)
         if srcobj is not None:
-            return setattr(srcobj, srcattrname, value)
+            setattr(srcobj, srcattrname, value)
         else:
-            return setattr(self, private_attrname, value)
+            setattr(self, private_attrname, value)
             
     return property(getfn, setfn)
 
