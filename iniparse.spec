@@ -1,7 +1,7 @@
 %{!?python_sitelib: %define python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
 
 Name:           iniparse
-Version:        0.1
+Version:        0.2
 Release:        1%{?dist}
 Summary:        Python Module to Accessing and Modifying Configuration Data in ini files
 Group:          Development/Libraries
@@ -39,11 +39,14 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root,-)
-%doc README LICENSE-PSF LICENSE Changelog 
+%doc README LICENSE-PSF LICENSE Changelog html/*
 %{python_sitelib}/%{name}
 
 
 
 %changelog
+* Tue Jul 17 2007 Tim Lauridsen <timlau@fedoraproject.org> - 0.2-1
+- Release 0.2
+- Added html/* to %%doc
 * Fri Jul 13 2007 Tim Lauridsen <timlau@fedoraproject.org> - 0.1-1
 - Initial build.
