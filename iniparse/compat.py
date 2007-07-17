@@ -28,9 +28,10 @@ import ini
 
 class RawConfigParser(object):
     def __init__(self, defaults=None):
-        self.data = ini.INIConfig(defaults=defaults)
-        if self.optionxform is not self.data._optionxform:
-            self.data._optionxform = self.optionxform
+        self.data = ini.INIConfig(defaults=defaults, optionxformsource=self)
+        
+    def optionxform(self, optionstr):
+        return optionstr.lower()
 
     def defaults(self):
         d = {}
@@ -137,10 +138,6 @@ class RawConfigParser(object):
         if v.lower() not in self._boolean_states:
             raise ValueError, 'Not a boolean: %s' % v
         return self._boolean_states[v.lower()]
-
-    def get_oxf(self): return self.data._optionxform
-    def set_oxf(self, value): self.data._optionxform = value
-    optionxform = property(get_oxf, set_oxf)
 
     def has_option(self, section, option):
         """Check for the existence of a given option in a given section."""

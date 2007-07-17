@@ -269,18 +269,46 @@ class LineContainer(object):
             return x
         raise KeyError(key)
 
+        
+def _make_xform_property(myattrname, srcattrname=None):
+    private_attrname = myattrname + 'value'
+    private_srcname = myattrname + 'source'
+    if srcattrname is None:
+        srcattrname = myattrname
+    
+    def getfn(self):
+        srcobj = getattr(self, private_srcname)
+        if srcobj is not None:
+            return getattr(srcobj, srcattrname)
+        else:
+            return getattr(self, private_attrname)
+            
+    def setfn(self, value):
+        srcobj = getattr(self, private_srcname)
+        if srcobj is not None:
+            return setattr(srcobj, srcattrname, value)
+        else:
+            return setattr(self, private_attrname, value)
+            
+    return property(getfn, setfn)
+
 
 class INISection(config.ConfigNamespace):
     _lines = None
     _options = None
     _defaults = None
-    _optionxform = None
-    def __init__(self, lineobj, defaults = None, optionxform=None):
+    _optionxformvalue = None
+    _optionxformsource = None
+    def __init__(self, lineobj, defaults = None,
+                       optionxformvalue=None, optionxformsource=None):
         self._lines = [lineobj]
         self._defaults = defaults
-        self._optionxform = optionxform
+        self._optionxformvalue = optionxformvalue
+        self._optionxformsource = optionxformsource
         self._options = {}
 
+    _optionxform = _make_xform_property('_optionxform')
+    
     def __getitem__(self, key):
         if key == '__name__':
             return self._lines[-1].name
@@ -349,23 +377,31 @@ class INIConfig(config.ConfigNamespace):
     _data = None
     _sections = None
     _defaults = None
-    _sectionxform = None
-    _optionxform = None
+    _optionxformvalue = None
+    _optionxformsource = None
+    _sectionxformvalue = None
+    _sectionxformsource = None
     _parse_exc = None
     def __init__(self, fp=None, defaults = None, parse_exc=True,
-                 optionxform=str.lower, sectionxform=None):
+                 optionxformvalue=str.lower, optionxformsource=None,
+                 sectionxformvalue=None, sectionxformsource=None):
         self._data = LineContainer()
         self._parse_exc = parse_exc
-        self._optionxform = optionxform
-        self._sectionxform = sectionxform
+        self._optionxformvalue = optionxformvalue
+        self._optionxformsource = optionxformsource
+        self._sectionxformvalue = sectionxformvalue
+        self._sectionxformsource = sectionxformsource
         self._sections = {}
         if defaults is None: defaults = {}
-        self._defaults = INISection(LineContainer(), optionxform=optionxform)
+        self._defaults = INISection(LineContainer(), optionxformsource=self)
         for name, value in defaults.iteritems():
             self._defaults[name] = value
         if fp is not None:
             self.readfp(fp)
 
+    _optionxform = _make_xform_property('_optionxform', 'optionxform')
+    _sectionxform = _make_xform_property('_sectionxform', 'optionxform')
+        
     def __getitem__(self, key):
         if key == DEFAULTSECT:
             return self._defaults
@@ -400,7 +436,7 @@ class INIConfig(config.ConfigNamespace):
             ns._lines.append(obj)
         else:
             ns = INISection(obj, defaults=self._defaults,
-                            optionxform=self._optionxform)
+                            optionxformsource=self)
             self._sections[name] = ns
         return ns
 
@@ -493,7 +529,7 @@ class INIConfig(config.ConfigNamespace):
                     if not self._sections.has_key(cur_section_name):
                         self._sections[cur_section_name] = \
                                 INISection(cur_section, defaults=self._defaults,
-                                           optionxform=self._optionxform)
+                                           optionxformsource=self)
                     else:
                         self._sections[cur_section_name]._lines.append(cur_section)
 
