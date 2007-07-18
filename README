@@ -1,26 +1,27 @@
-iniparse is a Python module that provides mechanisms for managing
-configuration information. It is backward compatible with
-ConfigParser, in addition to having the following features:
+Introduction to iniparse
+
+iniparse is a INI parser for Python which is:
+
+* Compatiable with ConfigParser: Backward compatible implementations
+  of ConfigParser, RawConfigParser, and SafeConfigParser are included
+  that are API-compatible with the Python standard library. They pass
+  all the unit tests in Python-2.4.4.
 
 * Preserves structure of INI files: Order of sections & options,
-  indentation (to some extent), comments, and blank lines are
-  preserved when data is updated.
+  indentation, comments, and blank lines are preserved as far as
+  possible when data is updated.
 
-* More convenient than ConfigParser: Values can be accessed using
-  dotted notation, or using container syntax (cfg[key]).
+* More convenient: Values can be accessed using dotted notation
+  (cfg.user.name), or using container syntax (cfg['user']['name']).
 
-* Backward compatibility: Backward compatible implementations of
-  ConfigParser, RawConfigParser, and SafeConfigParser are included
-  that are API-compatible with the Python standard library. They
-  pass all the unit tests in Python-2.3.4.
+It is very useful for config files that are updated both by users and by
+programs, since it is very disorienting for a user to have her config file
+completely rearranged whenever a program changes it. iniparse also allows
+making the order of entries in a config file significant, which is desirable
+in applications like image galleries.
 
-* Extensible: It is possible to add other configuration formats,
-  and to convert between different formats (as long as the data
-  models are compatible).
-
-URL: http://code.google.com/p/iniparse/
-
-Contact: Paramjit Oberoi <param.cs.wisc.edu>
+Website: http://code.google.com/p/iniparse/
+Mailing List: iniparse-discuss@googlegroups.com
 
 Copyright (c) 2001, 2002, 2003 Python Software Foundation
 Copyright (c) 2004-2007 Paramjit Oberoi <param.cs.wisc.edu>

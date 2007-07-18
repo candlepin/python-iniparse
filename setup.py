@@ -16,7 +16,7 @@ iniparse is an INI parser for  Python which is API compatible
 with the standard library's ConfigParser, preserves structure of INI
 files (order of sections & options, indentation, comments, and blank
 lines are preserved when data is updated), and is more convenient to
-use.'''.strip(),
+use.''',
       classifiers = [
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
