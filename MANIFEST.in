@@ -2,5 +2,6 @@ include iniparse/*.py
 include tests/*.py
 include html/*.html
 include html/style.css
-include MANIFEST.in setup.py Makefile runtests.py
+include Makefile runtests.py
+include MANIFEST.in setup.py iniparse.spec
 include README Changelog LICENSE LICENSE-PSF
