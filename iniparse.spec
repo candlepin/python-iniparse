@@ -3,23 +3,23 @@
 Name:           iniparse
 Version:        0.2
 Release:        1%{?dist}
-Summary:        Python Module to Accessing and Modifying Configuration Data in ini files
+Summary:        Python Module for Accessing and Modifying Configuration Data in INI files
 Group:          Development/Libraries
 License:        MIT
 URL:            http://code.google.com/p/iniparse/
 Source0:        http://iniparse.googlecode.com/files/%{name}-%{version}.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-BuildRequires: python-setuptools  
+BuildRequires: python-setuptools
 
 BuildArch: noarch
 
 %description
-cfgparse is a Python module that provides mechanisms for managing
-configuration information. It is backward compatible with ConfigParser,
-preserves structure of INI files, and allows convenient access to data.
-Compatibility with ConfigParser has been tested using the unit tests
-included with Python-2.3.4
+iniparse is an INI parser for Python which is API compatible
+with the standard library's ConfigParser, preserves structure of INI
+files (order of sections & options, indentation, comments, and blank
+lines are preserved when data is updated), and is more convenient to
+use.
 
 %prep
 %setup -q

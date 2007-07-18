@@ -5,7 +5,8 @@ VERSION=$(shell awk '/Version:/ { print $$2 }' ${PKGNAME}.spec)
 clean:
 	rm -f *.pyc *.pyo *~ *.bak
 	rm -f iniparse/*.pyc iniparse/*.pyo iniparse/*~ iniparse/*.bak
-	rm -f *.tar.gz
+	rm -f tests/*.pyc tests/*.pyo tests/*~ tests/*.bak
+	rm -f *.tar.gz MANIFEST
 
 archive:
 
