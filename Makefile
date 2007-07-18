@@ -1,6 +1,6 @@
 PKGNAME = iniparse
-VERSION=$(shell awk '/Version:/ { print $$2 }' ${PKGNAME}.spec)
-
+SPECVERSION=$(shell awk '/Version:/ { print $$2 }' ${PKGNAME}.spec)
+SETUPVERSION=$(shell awk -F\' '/VERSION =/ { print $$2 }' setup.py)
 
 clean:
 	rm -f *.pyc *.pyo *~ *.bak
@@ -9,18 +9,11 @@ clean:
 	rm -f *.tar.gz MANIFEST
 
 archive:
-
-	rm -rf ${PKGNAME}-${VERSION}.tar.gz
-	rm -rf /tmp/${PKGNAME}-$(VERSION) /tmp/${PKGNAME}
-	@dir=$$PWD; cd /tmp; cp -a "$$dir" ${PKGNAME}
-	@mv /tmp/${PKGNAME} /tmp/${PKGNAME}-$(VERSION)
-	@dir=$$PWD; cd /tmp; tar cvzf "$$dir/${PKGNAME}-$(VERSION).tar.gz" ${PKGNAME}-$(VERSION)
-	@rm -rf /tmp/${PKGNAME}-$(VERSION)	
-	@echo "The archive is in ${PKGNAME}-$(VERSION).tar.gz"
-
+	python setup.py sdist -d .
+	@echo "The archive is in ${PKGNAME}-$(SETUPVERSION).tar.gz"
 
 buildrpm: archive
-	rpmbuild -ta ${PKGNAME}-$(VERSION).tar.gz
+	rpmbuild -ta ${PKGNAME}-$(SPECVERSION).tar.gz
 
 pychecker:
 	pychecker --stdlib iniparse/*py tests/*py
