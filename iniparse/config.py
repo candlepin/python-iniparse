@@ -237,7 +237,11 @@ class BasicConfig(ConfigNamespace):
         return obj
 
     def readfp(self, fp):
-        for line in fp:
+        while True:
+            line = fp.readline()
+            if not line:
+                break
+            
             line = line.strip()
             if not line: continue
             if line[0] == '#': continue

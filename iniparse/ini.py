@@ -468,7 +468,12 @@ class INIConfig(config.ConfigNamespace):
             fname = '<???>'
         linecount = 0
         exc = None
-        for line in fp:
+
+        while True:
+            line = fp.readline()
+            if not line:
+                break
+
             lineobj = self._parse(line)
             linecount += 1
 
