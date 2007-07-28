@@ -1,5 +1,6 @@
 import unittest
-from iniparse import compat
+from StringIO import StringIO
+from iniparse import compat, ini
 
 class CaseSensitiveConfigParser(compat.ConfigParser):
     """Case Sensitive version of ConfigParser"""
@@ -15,7 +16,7 @@ class test_optionxform_override(unittest.TestCase):
         c.set('foo', 'Bar', 'b')
         self.assertEqual(c.get('foo', 'bar'), 'a')
         self.assertEqual(c.get('foo', 'Bar'), 'b')
-        
+
     def test_assignment(self):
         c = compat.ConfigParser()
         c.optionxform = str
@@ -24,7 +25,7 @@ class test_optionxform_override(unittest.TestCase):
         c.set('foo', 'Bar', 'b')
         self.assertEqual(c.get('foo', 'bar'), 'a')
         self.assertEqual(c.get('foo', 'Bar'), 'b')
-    
+
     def test_dyanamic(self):
         c = compat.ConfigParser()
         c.optionxform = str
@@ -38,9 +39,57 @@ class test_optionxform_override(unittest.TestCase):
         self.assertEqual(c.get('foo', 'Bar'), 'a')
         c.optionxform = str
         self.assertEqual(c.get('foo', 'Bar'), 'b')
-        
+
+
+class OnlyReadline:
+    def __init__(self, s):
+        self.sio = StringIO(s)
+
+    def readline(self):
+        return self.sio.readline()
+
+class test_readline(unittest.TestCase):
+    """Test that the file object passed to readfp only needs to
+    support the .readline() method.  As of Python-2.4.4, this is
+    true of the standard librariy's ConfigParser, and so other
+    code uses that to guide what is sufficiently file-like."""
+
+    test_strings = [
+"""\
+[foo]
+bar=7
+baz=8""",
+"""\
+[foo]
+bar=7
+baz=8
+""",
+"""\
+[foo]
+bar=7
+baz=8
+    """]
+
+    def test_readline_iniconfig(self):
+        for s in self.test_strings:
+            fp = OnlyReadline(s)
+            c = ini.INIConfig()
+            c.readfp(fp)
+            self.assertEqual(s, str(c))
+
+    def test_readline_configparser(self):
+        for s in self.test_strings:
+            fp = OnlyReadline(s)
+            c = compat.ConfigParser()
+            c.readfp(fp)
+            ss = StringIO()
+            c.write(ss)
+            self.assertEqual(s, ss.getvalue())
+
+
 class suite(unittest.TestSuite):
     def __init__(self):
         unittest.TestSuite.__init__(self, [
                 unittest.makeSuite(test_optionxform_override, 'test'),
+                unittest.makeSuite(test_readline, 'test'),
     ])
