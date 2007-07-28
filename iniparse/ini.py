@@ -373,6 +373,26 @@ def make_comment(line):
     return CommentLine(line.rstrip())
 
 
+def readline_iterator(f):
+    """iterate over a file by only using the file object's readline method"""
+    
+    have_newline = False
+    while True:
+        line = f.readline()
+        
+        if not line:
+            if have_newline:
+                yield ""
+            return
+        
+        if line.endswith('\n'):
+            have_newline = True
+        else:
+            have_newline = False
+            
+        yield line
+
+        
 class INIConfig(config.ConfigNamespace):
     _data = None
     _sections = None
@@ -469,11 +489,7 @@ class INIConfig(config.ConfigNamespace):
         linecount = 0
         exc = None
 
-        while True:
-            line = fp.readline()
-            if not line:
-                break
-
+        for line in readline_iterator(fp):
             lineobj = self._parse(line)
             linecount += 1
 
