@@ -2,7 +2,7 @@
 
 Name:           python-iniparse
 Version:        0.2
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        Python Module for Accessing and Modifying Configuration Data in INI files
 Group:          Development/Libraries
 License:        MIT
@@ -31,7 +31,9 @@ use.
 %install
 rm -rf $RPM_BUILD_ROOT
 %{__python} setup.py install -O1 --skip-build --root $RPM_BUILD_ROOT
-
+# fixes
+chmod 644 $RPM_BUILD_ROOT//usr/share/doc/iniparse-%{version}/index.html
+mv $RPM_BUILD_ROOT/usr/share/doc/iniparse-%{version} $RPM_BUILD_ROOT/usr/share/doc/python-iniparse-%{version}
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -39,12 +41,14 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root,-)
-%doc README LICENSE-PSF LICENSE Changelog html/*
+%doc  %{_docdir}/python-iniparse-%{version}/*
 %{python_sitelib}/iniparse
 
 
 
 %changelog
+* Fri Jul 27 2007 Tim Lauridsen <timlau@fedoraproject.org> - 0.2-3
+- relocated doc to %{_docdir}/python-iniparse-%{version}
 * Thu Jul 26 2007 Tim Lauridsen <timlau@fedoraproject.org> - 0.2-2
 - changed name from iniparse to python-iniparse
 * Tue Jul 17 2007 Tim Lauridsen <timlau@fedoraproject.org> - 0.2-1
