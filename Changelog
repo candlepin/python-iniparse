@@ -1,3 +1,10 @@
+2007-08-07
+* released version 0.2.1
+
+2007-07-28
+* only use .readline() on file objects for better ConfigParser compatibility
+* spec file fixes for fedora
+
 2007-07-19
 * released version 0.2
 

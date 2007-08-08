@@ -1,5 +1,5 @@
 PKGNAME = iniparse
-SPECVERSION=$(shell awk '/Version:/ { print $$2 }' ${PKGNAME}.spec)
+SPECVERSION=$(shell awk '/Version:/ { print $$2 }' python-${PKGNAME}.spec)
 SETUPVERSION=$(shell awk -F\' '/VERSION =/ { print $$2 }' setup.py)
 
 clean:

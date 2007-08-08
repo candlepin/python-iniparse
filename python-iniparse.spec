@@ -1,8 +1,8 @@
 %{!?python_sitelib: %define python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
 
 Name:           python-iniparse
-Version:        0.2
-Release:        3%{?dist}
+Version:        0.2.1
+Release:        1%{?dist}
 Summary:        Python Module for Accessing and Modifying Configuration Data in INI files
 Group:          Development/Libraries
 License:        MIT
@@ -47,6 +47,8 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Tue Aug 7 2007 Paramjit Oberoi <param@cs.wisc.edu> - 0.2.1-1
+- Release 0.2.1
 * Fri Jul 27 2007 Tim Lauridsen <timlau@fedoraproject.org> - 0.2-3
 - relocated doc to %{_docdir}/python-iniparse-%{version}
 * Thu Jul 26 2007 Tim Lauridsen <timlau@fedoraproject.org> - 0.2-2
