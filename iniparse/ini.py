@@ -269,27 +269,27 @@ class LineContainer(object):
             return x
         raise KeyError(key)
 
-        
+
 def _make_xform_property(myattrname, srcattrname=None):
     private_attrname = myattrname + 'value'
     private_srcname = myattrname + 'source'
     if srcattrname is None:
         srcattrname = myattrname
-    
+
     def getfn(self):
         srcobj = getattr(self, private_srcname)
         if srcobj is not None:
             return getattr(srcobj, srcattrname)
         else:
             return getattr(self, private_attrname)
-            
+
     def setfn(self, value):
         srcobj = getattr(self, private_srcname)
         if srcobj is not None:
             setattr(srcobj, srcattrname, value)
         else:
             setattr(self, private_attrname, value)
-            
+
     return property(getfn, setfn)
 
 
@@ -308,7 +308,7 @@ class INISection(config.ConfigNamespace):
         self._options = {}
 
     _optionxform = _make_xform_property('_optionxform')
-    
+
     def __getitem__(self, key):
         if key == '__name__':
             return self._lines[-1].name
@@ -375,24 +375,24 @@ def make_comment(line):
 
 def readline_iterator(f):
     """iterate over a file by only using the file object's readline method"""
-    
+
     have_newline = False
     while True:
         line = f.readline()
-        
+
         if not line:
             if have_newline:
                 yield ""
             return
-        
+
         if line.endswith('\n'):
             have_newline = True
         else:
             have_newline = False
-            
+
         yield line
 
-        
+
 class INIConfig(config.ConfigNamespace):
     _data = None
     _sections = None
@@ -421,7 +421,7 @@ class INIConfig(config.ConfigNamespace):
 
     _optionxform = _make_xform_property('_optionxform', 'optionxform')
     _sectionxform = _make_xform_property('_sectionxform', 'optionxform')
-        
+
     def __getitem__(self, key):
         if key == DEFAULTSECT:
             return self._defaults
