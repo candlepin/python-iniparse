@@ -309,10 +309,10 @@ op1 = qwert
     yuiop
 op2 = qwert
 
-#    yuiop
+    yuiop
 op3 = qwert
 # yup
-#    yuiop
+    yuiop
 
 [another section]
 #    hmmm

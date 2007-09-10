@@ -238,7 +238,8 @@ class LineContainer(object):
         elif len(self.contents) == 1:
             return self.contents[0].value
         else:
-            return '\n'.join([str(x.value) for x in self.contents])
+            return '\n'.join([str(x.value) for x in self.contents
+                              if not isinstance(x, (CommentLine, EmptyLine))])
 
     def set_value(self, data):
         self.orgvalue = data
@@ -508,6 +509,8 @@ class INIConfig(config.ConfigNamespace):
 
             if isinstance(lineobj, ContinuationLine):
                 if cur_option:
+                    cur_option.extend(pending_lines)
+                    pending_lines = []
                     cur_option.add(lineobj)
                 else:
                     # illegal continuation line - convert to comment
@@ -515,9 +518,6 @@ class INIConfig(config.ConfigNamespace):
                         if exc is None: exc = ParsingError(fname)
                         exc.append(linecount, line)
                     lineobj = make_comment(line)
-            else:
-                cur_option = None
-                cur_option_name = None
 
             if isinstance(lineobj, OptionLine):
                 cur_section.extend(pending_lines)
@@ -539,6 +539,8 @@ class INIConfig(config.ConfigNamespace):
                 pending_lines = []
                 cur_section = LineContainer(lineobj)
                 self._data.add(cur_section)
+                cur_option = None
+                cur_option_name = None
                 if cur_section.name == DEFAULTSECT:
                     self._defaults._lines.append(cur_section)
                     cur_section_name = DEFAULTSECT

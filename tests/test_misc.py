@@ -87,9 +87,35 @@ baz=8
             self.assertEqual(s, ss.getvalue())
 
 
+class test_multiline_with_comments(unittest.TestCase):
+    """Test that multiline values are allowed to span comments."""
+
+    s = """\
+[sec]
+opt = 1
+ 2
+
+# comment
+ 3"""
+
+    def test_read(self):
+        c = ini.INIConfig()
+        c.readfp(StringIO(self.s))
+        self.assertEqual(c.sec.opt, '1\n2\n3')
+
+    def test_write(self):
+        c = ini.INIConfig()
+        c.readfp(StringIO(self.s))
+        c.sec.opt = 'xyz'
+        self.assertEqual(str(c), """\
+[sec]
+opt = xyz""")
+
+
 class suite(unittest.TestSuite):
     def __init__(self):
         unittest.TestSuite.__init__(self, [
                 unittest.makeSuite(test_optionxform_override, 'test'),
                 unittest.makeSuite(test_readline, 'test'),
+                unittest.makeSuite(test_multiline_with_comments, 'test'),
     ])
