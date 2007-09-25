@@ -1,5 +1,8 @@
+2007-09-24
+* released 0.2.2
+
 2007-09-09
-* Allow multi-line values to span comments and blank lines
+* allow multi-line values to span comments and blank lines
 
 2007-08-07
 * released version 0.2.1
