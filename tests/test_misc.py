@@ -111,6 +111,24 @@ opt = 1
 [sec]
 opt = xyz""")
 
+class test_empty_file(unittest.TestCase):
+    """Test if it works with an blank file"""
+
+    s = ""
+    
+    def test_read(self):
+        c = ini.INIConfig()
+        c.readfp(StringIO(self.s))
+        self.assertEqual(str(c), '')
+
+    def test_write(self):
+        c = ini.INIConfig()
+        c.readfp(StringIO(self.s))
+        c.sec.opt = 'xyz'
+        self.assertEqual(str(c), """\
+[sec]
+opt = xyz""")
+
 
 class suite(unittest.TestSuite):
     def __init__(self):
@@ -118,4 +136,5 @@ class suite(unittest.TestSuite):
                 unittest.makeSuite(test_optionxform_override, 'test'),
                 unittest.makeSuite(test_readline, 'test'),
                 unittest.makeSuite(test_multiline_with_comments, 'test'),
+                unittest.makeSuite(test_empty_file, 'test'),
     ])

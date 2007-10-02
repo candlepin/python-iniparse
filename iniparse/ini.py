@@ -489,6 +489,7 @@ class INIConfig(config.ConfigNamespace):
             fname = '<???>'
         linecount = 0
         exc = None
+        line = None
 
         for line in readline_iterator(fp):
             lineobj = self._parse(line)
