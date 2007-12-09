@@ -105,7 +105,7 @@ class SectionLine(LineType):
 
 
 class OptionLine(LineType):
-    def __init__(self, name, value, separator='=', comment=None,
+    def __init__(self, name, value, separator=' = ', comment=None,
                  comment_separator=None, comment_offset=-1, line=None):
         super(OptionLine, self).__init__(line)
         self.name = name
@@ -116,7 +116,7 @@ class OptionLine(LineType):
         self.comment_offset = comment_offset
 
     def to_string(self):
-        out = '%s %s %s' % (self.name, self.separator, self.value)
+        out = '%s%s%s' % (self.name, self.separator, self.value)
         if self.comment is not None:
             # try to preserve indentation of comments
             out = (out+' ').ljust(self.comment_offset)
@@ -124,7 +124,7 @@ class OptionLine(LineType):
         return out
 
     regex = re.compile(r'^(?P<name>[^:=\s[][^:=]*)'
-                       r'\s*(?P<sep>[:=])\s*'
+                       r'(?P<sep>[:=]\s*)'
                        r'(?P<value>.*)$')
 
     def parse(cls, line):
@@ -134,7 +134,7 @@ class OptionLine(LineType):
 
         name = m.group('name').rstrip()
         value = m.group('value')
-        sep = m.group('sep')
+        sep = m.group('name')[len(name):] + m.group('sep')
 
         # comments are not detected in the regex because
         # ensuring total compatibility with ConfigParser

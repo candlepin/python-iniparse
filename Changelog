@@ -1,3 +1,9 @@
+2007-12-09
+* preserve whitespace around '=' and ':'
+
+2007-10-02
+* handle empty files
+
 2007-09-24
 * released 0.2.2
 

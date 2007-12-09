@@ -65,20 +65,20 @@ class test_section_line(unittest.TestCase):
 
 class test_option_line(unittest.TestCase):
     lines = [
-        ('option = value', 'option', '=', 'value', None, None, -1),
-        ('option:   value', 'option', ':', 'value', None, None, -1),
+        ('option = value', 'option', ' = ', 'value', None, None, -1),
+        ('option:   value', 'option', ':   ', 'value', None, None, -1),
         ('option=value', 'option', '=', 'value', None, None, -1),
         ('op[ti]on=value', 'op[ti]on', '=', 'value', None, None, -1),
 
-        ('option = value # no comment', 'option', '=', 'value # no comment',
+        ('option = value # no comment', 'option', ' = ', 'value # no comment',
                                          None, None, -1),
-        ('option = value     ;', 'option', '=', 'value',
+        ('option = value     ;', 'option', ' = ', 'value',
                                          ';', '', 19),
-        ('option = value     ; comment', 'option', '=', 'value',
+        ('option = value     ; comment', 'option', ' = ', 'value',
                                          ';', ' comment', 19),
-        ('option = value;1   ; comment', 'option', '=', 'value;1   ; comment',
+        ('option = value;1   ; comment', 'option', ' = ', 'value;1   ; comment',
                                          None, None, -1),
-        ('op;ti on = value      ;; comm;ent', 'op;ti on', '=', 'value',
+        ('op;ti on = value      ;; comm;ent', 'op;ti on', ' = ', 'value',
                                          ';', '; comm;ent', 22),
     ]
     def test_parsing(self):
@@ -105,28 +105,20 @@ class test_option_line(unittest.TestCase):
             self.assertEqual(p, None)
 
     print_lines = [
-        ('option = value',
-         'option = value'),
-        ('option= value',
-         'option = value'),
-        ('option : value',
-         'option : value'),
-        ('option: value  ',
-         'option : value'),
-        ('option   =    value  ',
-         'option = value'),
-        ('option = value   ;',
-         'option = value   ;'),
-        ('option = value;2    ;; 4 5',
-         'option = value;2    ;; 4 5'),
-        ('option = value     ; hi!',
-         'option = value     ; hi!'),
+        'option = value',
+        'option= value',
+        'option : value',
+        'option: value  ',
+        'option   =    value  ',
+        'option = value   ;',
+        'option = value;2    ;; 4 5',
+        'option = value     ; hi!',
     ]
     def test_printing(self):
         for l in self.print_lines:
-            p = ini.OptionLine.parse(l[0])
-            self.assertEqual(str(p), l[0])
-            self.assertEqual(p.to_string(), l[1])
+            p = ini.OptionLine.parse(l)
+            self.assertEqual(str(p), l)
+            self.assertEqual(p.to_string(), l.rstrip())
 
     indent_test_lines = [
         ('option = value   ;comment', 'newoption', 'newval',
