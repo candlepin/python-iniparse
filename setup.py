@@ -2,7 +2,7 @@
 
 from distutils.core import setup
 
-VERSION = '0.2.2'
+VERSION = '0.2.3'
 
 setup(name ='iniparse',
       version = VERSION,
@@ -18,7 +18,7 @@ files (order of sections & options, indentation, comments, and blank
 lines are preserved when data is updated), and is more convenient to
 use.''',
       classifiers = [
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'License :: OSI Approved :: Python Software Foundation License',
