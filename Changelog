@@ -1,3 +1,8 @@
+2008-03-30
+* cleanup ConfigNamespace docs
+* rename readfp() to _readfp()
+* replace import_namespace() with an update_config() utility function.
+
 2007-12-11
 * released 0.2.3
 

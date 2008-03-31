@@ -74,7 +74,7 @@ baz=8
         for s in self.test_strings:
             fp = OnlyReadline(s)
             c = ini.INIConfig()
-            c.readfp(fp)
+            c._readfp(fp)
             self.assertEqual(s, str(c))
 
     def test_readline_configparser(self):
@@ -100,12 +100,12 @@ opt = 1
 
     def test_read(self):
         c = ini.INIConfig()
-        c.readfp(StringIO(self.s))
+        c._readfp(StringIO(self.s))
         self.assertEqual(c.sec.opt, '1\n2\n3')
 
     def test_write(self):
         c = ini.INIConfig()
-        c.readfp(StringIO(self.s))
+        c._readfp(StringIO(self.s))
         c.sec.opt = 'xyz'
         self.assertEqual(str(c), """\
 [sec]
@@ -115,15 +115,15 @@ class test_empty_file(unittest.TestCase):
     """Test if it works with an blank file"""
 
     s = ""
-    
+
     def test_read(self):
         c = ini.INIConfig()
-        c.readfp(StringIO(self.s))
+        c._readfp(StringIO(self.s))
         self.assertEqual(str(c), '')
 
     def test_write(self):
         c = ini.INIConfig()
-        c.readfp(StringIO(self.s))
+        c._readfp(StringIO(self.s))
         c.sec.opt = 'xyz'
         self.assertEqual(str(c), """\
 [sec]

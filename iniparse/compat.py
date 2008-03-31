@@ -18,7 +18,7 @@ from ConfigParser import DuplicateSectionError,    \
                   InterpolationDepthError,         \
                   InterpolationSyntaxError,        \
                   DEFAULTSECT, MAX_INTERPOLATION_DEPTH
-                  
+
 # These are imported only for compatiability.
 # The code below does not reference them directly.
 from ConfigParser import Error, InterpolationError, \
@@ -29,7 +29,7 @@ import ini
 class RawConfigParser(object):
     def __init__(self, defaults=None):
         self.data = ini.INIConfig(defaults=defaults, optionxformsource=self)
-        
+
     def optionxform(self, optionstr):
         return optionstr.lower()
 
@@ -52,7 +52,7 @@ class RawConfigParser(object):
         if self.has_section(section):
             raise DuplicateSectionError(section)
         else:
-            self.data.new_namespace(section)
+            self.data._new_namespace(section)
 
     def has_section(self, section):
         """Indicate whether the named section is present in the configuration.
@@ -91,7 +91,7 @@ class RawConfigParser(object):
             except IOError:
                 continue
             files_read.append(filename)
-            self.data.readfp(fp)
+            self.data._readfp(fp)
             fp.close()
         return files_read
 
@@ -103,7 +103,7 @@ class RawConfigParser(object):
         taken from fp.name.  If fp has no `name' attribute, `<???>' is
         used.
         """
-        self.data.readfp(fp)
+        self.data._readfp(fp)
 
     def get(self, section, option, vars=None):
         if not self.has_section(section):
@@ -185,7 +185,7 @@ class RawConfigParser(object):
 
 class ConfigDict(object):
     """Present a dict interface to a ini section."""
-    
+
     def __init__(self, cfg, section, vars):
         self.cfg = cfg
         self.section = section

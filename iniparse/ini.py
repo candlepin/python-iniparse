@@ -1,5 +1,5 @@
 # Copyright (c) 2001, 2002, 2003 Python Software Foundation
-# Copyright (c) 2004 Paramjit Oberoi <param.cs.wisc.edu>
+# Copyright (c) Paramjit Oberoi <param.cs.wisc.edu>
 # All Rights Reserved.  See LICENSE-PSF & LICENSE for details.
 
 """Access and/or modify INI files
@@ -42,9 +42,10 @@ Example:
 # Backward-compatiable with ConfigParser
 
 import re
-import config
 from sets import Set
 from ConfigParser import DEFAULTSECT, ParsingError, MissingSectionHeaderError
+
+import config
 
 class LineType(object):
     line = None
@@ -366,7 +367,7 @@ class INISection(config.ConfigNamespace):
                     yield x
                     d.add(x)
 
-    def new_namespace(self, name):
+    def _new_namespace(self, name):
         raise Exception('No sub-sections allowed', name)
 
 
@@ -418,7 +419,7 @@ class INIConfig(config.ConfigNamespace):
         for name, value in defaults.iteritems():
             self._defaults[name] = value
         if fp is not None:
-            self.readfp(fp)
+            self._readfp(fp)
 
     _optionxform = _make_xform_property('_optionxform', 'optionxform')
     _sectionxform = _make_xform_property('_sectionxform', 'optionxform')
@@ -446,7 +447,7 @@ class INIConfig(config.ConfigNamespace):
                     yield x.name
                     d.add(x.name)
 
-    def new_namespace(self, name):
+    def _new_namespace(self, name):
         if self._data.contents:
             self._data.add(EmptyLine())
         obj = LineContainer(SectionLine(name))
@@ -477,7 +478,7 @@ class INIConfig(config.ConfigNamespace):
             # can't parse line
             return None
 
-    def readfp(self, fp):
+    def _readfp(self, fp):
         cur_section = None
         cur_option = None
         cur_section_name = None
