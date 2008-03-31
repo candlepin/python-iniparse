@@ -379,6 +379,7 @@ def readline_iterator(f):
     """iterate over a file by only using the file object's readline method"""
 
     have_newline = False
+    first_line = True
     while True:
         line = f.readline()
 
@@ -392,7 +393,16 @@ def readline_iterator(f):
         else:
             have_newline = False
 
+        if first_line:
+            first_line = False
+            if isinstance(line, unicode) and line[0] == u'\ufeff':
+                line = line[1:]
+
         yield line
+
+
+def lower(x):
+    return x.lower()
 
 
 class INIConfig(config.ConfigNamespace):
@@ -405,7 +415,7 @@ class INIConfig(config.ConfigNamespace):
     _sectionxformsource = None
     _parse_exc = None
     def __init__(self, fp=None, defaults = None, parse_exc=True,
-                 optionxformvalue=str.lower, optionxformsource=None,
+                 optionxformvalue=lower, optionxformsource=None,
                  sectionxformvalue=None, sectionxformsource=None):
         self._data = LineContainer()
         self._parse_exc = parse_exc
