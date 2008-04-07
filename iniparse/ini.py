@@ -239,12 +239,12 @@ class LineContainer(object):
         elif len(self.contents) == 1:
             return self.contents[0].value
         else:
-            return '\n'.join([str(x.value) for x in self.contents
+            return '\n'.join([('%s' % x.value) for x in self.contents
                               if not isinstance(x, (CommentLine, EmptyLine))])
 
     def set_value(self, data):
         self.orgvalue = data
-        lines = str(data).split('\n')
+        lines = ('%s' % data).split('\n')
         linediff = len(lines) - len(self.contents)
         if linediff > 0:
             for _ in range(linediff):
@@ -258,7 +258,7 @@ class LineContainer(object):
     value = property(get_value, set_value)
 
     def __str__(self):
-        s = [str(x) for x in self.contents]
+        s = [('%s' % x) for x in self.contents]
         return '\n'.join(s)
 
     def finditer(self, key):
@@ -379,7 +379,6 @@ def readline_iterator(f):
     """iterate over a file by only using the file object's readline method"""
 
     have_newline = False
-    first_line = True
     while True:
         line = f.readline()
 
@@ -392,11 +391,6 @@ def readline_iterator(f):
             have_newline = True
         else:
             have_newline = False
-
-        if first_line:
-            first_line = False
-            if isinstance(line, unicode) and line[0] == u'\ufeff':
-                line = line[1:]
 
         yield line
 
@@ -414,6 +408,7 @@ class INIConfig(config.ConfigNamespace):
     _sectionxformvalue = None
     _sectionxformsource = None
     _parse_exc = None
+    _bom = False
     def __init__(self, fp=None, defaults = None, parse_exc=True,
                  optionxformvalue=lower, optionxformsource=None,
                  sectionxformvalue=None, sectionxformsource=None):
@@ -473,7 +468,13 @@ class INIConfig(config.ConfigNamespace):
         return ns
 
     def __str__(self):
-        return str(self._data)
+        if self._bom:
+            fmt = u'\ufeff%s'
+        else:
+            fmt = '%s'
+        return fmt % self._data
+
+    __unicode__ = __str__
 
     _line_types = [EmptyLine, CommentLine,
                    SectionLine, OptionLine,
@@ -503,6 +504,12 @@ class INIConfig(config.ConfigNamespace):
         line = None
 
         for line in readline_iterator(fp):
+            # Check for BOM on first line
+            if linecount == 0 and isinstance(line, unicode):
+                if line[0] == u'\ufeff':
+                    line = line[1:]
+                    self._bom = True
+
             lineobj = self._parse(line)
             linecount += 1
 

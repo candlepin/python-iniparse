@@ -1,3 +1,7 @@
+2008-04-06
+* support files opened in unicode mode
+* handle BOMs in unicode mode
+
 2008-03-30
 * cleanup ConfigNamespace docs
 * rename readfp() to _readfp()
