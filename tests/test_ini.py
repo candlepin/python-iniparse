@@ -1,7 +1,3 @@
-# Copyright (c) 2001, 2002, 2003 Python Software Foundation
-# Copyright (c) 2004 Paramjit Oberoi <param.cs.wisc.edu>
-# All Rights Reserved.  See LICENSE-PSF & LICENSE for details.
-
 import unittest
 from StringIO import StringIO
 

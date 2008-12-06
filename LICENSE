@@ -1,5 +1,6 @@
 Copyright (c) 2001, 2002, 2003 Python Software Foundation
-Copyright (c) 2004-2007 Paramjit Oberoi <param.cs.wisc.edu>
+Copyright (c) 2004-2008 Paramjit Oberoi <param.cs.wisc.edu>
+Copyright (c) 2007 Tim Lauridsen <tla@rasmil.dk>
 All Rights Reserved.
 
 iniparse/compat.py and tests/test_compat.py contain code derived from

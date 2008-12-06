@@ -4,8 +4,7 @@ iniparse is a INI parser for Python which is:
 
 * Compatiable with ConfigParser: Backward compatible implementations
   of ConfigParser, RawConfigParser, and SafeConfigParser are included
-  that are API-compatible with the Python standard library. They pass
-  all the unit tests in Python-2.4.4.
+  that are API-compatible with the Python standard library.
 
 * Preserves structure of INI files: Order of sections & options,
   indentation, comments, and blank lines are preserved as far as
@@ -24,5 +23,6 @@ Website: http://code.google.com/p/iniparse/
 Mailing List: iniparse-discuss@googlegroups.com
 
 Copyright (c) 2001, 2002, 2003 Python Software Foundation
-Copyright (c) 2004-2007 Paramjit Oberoi <param.cs.wisc.edu>
+Copyright (c) 2004-2008 Paramjit Oberoi <param.cs.wisc.edu>
+Copyright (c) 2007 Tim Lauridsen <tla@rasmil.dk>
 All Rights Reserved.  See LICENSE-PSF & LICENSE for details.

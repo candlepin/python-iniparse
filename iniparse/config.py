@@ -1,7 +1,3 @@
-# Copyright (c) 2001, 2002, 2003 Python Software Foundation
-# Copyright (c) Paramjit Oberoi <param.cs.wisc.edu>
-# All Rights Reserved.  See LICENSE-PSF & LICENSE for details.
-
 class ConfigNamespace(object):
     """Abstract class representing the interface of Config objects.
 
