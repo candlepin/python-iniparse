@@ -129,6 +129,9 @@ class test_empty_file(unittest.TestCase):
 [sec]
 opt = xyz""")
 
+class test_custom_dict(unittest.TestCase):
+    def test_custom_dict_not_supported(self):
+        self.assertRaises(ValueError, compat.RawConfigParser, None, 'foo')
 
 class suite(unittest.TestSuite):
     def __init__(self):
@@ -137,4 +140,5 @@ class suite(unittest.TestSuite):
                 unittest.makeSuite(test_readline, 'test'),
                 unittest.makeSuite(test_multiline_with_comments, 'test'),
                 unittest.makeSuite(test_empty_file, 'test'),
+                unittest.makeSuite(test_custom_dict, 'test'),
     ])

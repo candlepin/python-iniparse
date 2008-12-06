@@ -408,7 +408,7 @@ class INIConfig(config.ConfigNamespace):
     _sectionxformsource = None
     _parse_exc = None
     _bom = False
-    def __init__(self, fp=None, defaults = None, parse_exc=True,
+    def __init__(self, fp=None, defaults=None, parse_exc=True,
                  optionxformvalue=lower, optionxformsource=None,
                  sectionxformvalue=None, sectionxformsource=None):
         self._data = LineContainer()

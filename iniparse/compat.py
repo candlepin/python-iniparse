@@ -27,7 +27,9 @@ from ConfigParser import Error, InterpolationError, \
 import ini
 
 class RawConfigParser(object):
-    def __init__(self, defaults=None):
+    def __init__(self, defaults=None, dict_type=dict):
+        if dict_type != dict:
+            raise ValueError('Custom dict types not supported')
         self.data = ini.INIConfig(defaults=defaults, optionxformsource=self)
 
     def optionxform(self, optionstr):
@@ -47,8 +49,14 @@ class RawConfigParser(object):
         """Create a new section in the configuration.
 
         Raise DuplicateSectionError if a section by the specified name
-        already exists.
+        already exists.  Raise ValueError if name is DEFAULT or any of
+        its case-insensitive variants.
         """
+        # The default section is the only one that gets the case-insensitive
+        # treatment - so it is special-cased here.
+        if section.lower() == "default":
+            raise ValueError, 'Invalid section name: %s' % section
+
         if self.has_section(section):
             raise DuplicateSectionError(section)
         else:
@@ -277,9 +285,21 @@ class ConfigParser(RawConfigParser):
 
 
 class SafeConfigParser(ConfigParser):
+    _interpvar_re = re.compile(r"%\(([^)]+)\)s")
+    _badpercent_re = re.compile(r"%[^%]|%$")
+
     def set(self, section, option, value):
         if not isinstance(value, basestring):
             raise TypeError("option values must be strings")
+        # check for bad percent signs:
+        # first, replace all "good" interpolations
+        tmp_value = self._interpvar_re.sub('', value)
+        # then, check if there's a lone percent sign left
+        m = self._badpercent_re.search(tmp_value)
+        if m:
+            raise ValueError("invalid interpolation syntax in %r at "
+                             "position %d" % (value, m.start()))
+
         ConfigParser.set(self, section, option, value)
 
     def _interpolate(self, section, option, rawval, vars):
