@@ -242,7 +242,7 @@ class ConfigParser(RawConfigParser):
                     value = value % vars
                 except KeyError, e:
                     raise InterpolationMissingOptionError(
-                        option, section, rawval, e[0])
+                        option, section, rawval, e.args[0])
             else:
                 break
         if value.find("%(") != -1:
@@ -346,4 +346,4 @@ class SafeConfigParser(ConfigParser):
             else:
                 raise InterpolationSyntaxError(
                     option, section,
-                    "'%' must be followed by '%' or '(', found: " + `rest`)
+                    "'%' must be followed by '%' or '(', found: " + repr(rest))
