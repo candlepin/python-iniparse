@@ -2,7 +2,7 @@ Introduction to iniparse
 
 iniparse is a INI parser for Python which is:
 
-* Compatiable with ConfigParser: Backward compatible implementations
+* Compatible with ConfigParser: Backward compatible implementations
   of ConfigParser, RawConfigParser, and SafeConfigParser are included
   that are API-compatible with the Python standard library.
 
