@@ -48,6 +48,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Tue Dec 6 2008 Paramjit Oberoi <param@cs.wisc.edu> - 0.2.4-1
+- Release 0.2.4
+- added egg-info file to %%files
 * Tue Dec 11 2007 Paramjit Oberoi <param@cs.wisc.edu> - 0.2.3-1
 - Release 0.2.3
 * Tue Sep 24 2007 Paramjit Oberoi <param@cs.wisc.edu> - 0.2.2-1
