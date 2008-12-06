@@ -1,7 +1,7 @@
 %{!?python_sitelib: %define python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
 
 Name:           python-iniparse
-Version:        0.2.3
+Version:        0.2.4
 Release:        1%{?dist}
 Summary:        Python Module for Accessing and Modifying Configuration Data in INI files
 Group:          Development/Libraries
@@ -43,6 +43,7 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root,-)
 %doc  %{_docdir}/python-iniparse-%{version}/*
 %{python_sitelib}/iniparse
+%{python_sitelib}/iniparse-%{version}-py*.egg-info
 
 
 

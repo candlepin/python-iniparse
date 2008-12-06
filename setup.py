@@ -2,7 +2,7 @@
 
 from distutils.core import setup
 
-VERSION = '0.2.3'
+VERSION = '0.2.4'
 
 setup(name ='iniparse',
       version = VERSION,
