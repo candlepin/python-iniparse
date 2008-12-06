@@ -42,7 +42,6 @@ Example:
 # Backward-compatiable with ConfigParser
 
 import re
-from sets import Set
 from ConfigParser import DEFAULTSECT, ParsingError, MissingSectionHeaderError
 
 import config
@@ -258,7 +257,7 @@ class LineContainer(object):
     value = property(get_value, set_value)
 
     def __str__(self):
-        s = [('%s' % x) for x in self.contents]
+        s = [x.__str__() for x in self.contents]
         return '\n'.join(s)
 
     def finditer(self, key):
@@ -350,7 +349,7 @@ class INISection(config.ConfigNamespace):
         del self._options[key]
 
     def __iter__(self):
-        d = Set()
+        d = set()
         for l in self._lines:
             for x in l.contents:
                 if isinstance(x, LineContainer):
@@ -445,7 +444,7 @@ class INIConfig(config.ConfigNamespace):
         del self._sections[key]
 
     def __iter__(self):
-        d = Set()
+        d = set()
         for x in self._data.contents:
             if isinstance(x, LineContainer):
                 if x.name not in d:
@@ -472,7 +471,7 @@ class INIConfig(config.ConfigNamespace):
             fmt = u'\ufeff%s'
         else:
             fmt = '%s'
-        return fmt % self._data
+        return fmt % self._data.__str__()
 
     __unicode__ = __str__
 
