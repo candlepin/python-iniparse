@@ -101,7 +101,7 @@ opt = 1
     def test_read(self):
         c = ini.INIConfig()
         c._readfp(StringIO(self.s))
-        self.assertEqual(c.sec.opt, '1\n2\n3')
+        self.assertEqual(c.sec.opt, '1\n2\n\n3')
 
     def test_write(self):
         c = ini.INIConfig()

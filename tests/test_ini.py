@@ -311,6 +311,70 @@ op3 = qwert
             ip = ini.INIConfig(StringIO(org), parse_exc=False)
             self.assertEqual(str(ip), mod)
 
+    # test multi-line values
+    s2 = (
+"""
+[section]
+option =
+  foo
+  bar
+
+  baz
+  yam
+"""
+)
+
+    s3 = (
+"""
+[section]
+option =
+  foo
+  bar
+  mum
+
+  baz
+  yam
+"""
+)
+
+    def test_option_continuation(self):
+        ip = ini.INIConfig(StringIO(self.s2))
+        self.assertEqual(str(ip), self.s2)
+        value = ip.section.option.split('\n')
+        value.insert(3, 'mum')
+        ip.section.option = '\n'.join(value)
+        self.assertEqual(str(ip), self.s3)
+
+    s5 = (
+"""
+[section]
+option =
+  foo
+  bar
+"""
+)
+
+    s6 = (
+"""
+[section]
+option =
+
+
+  foo
+
+
+
+another = baz
+"""
+)
+
+    def test_option_continuation_single(self):
+        ip = ini.INIConfig(StringIO(self.s5))
+        self.assertEqual(str(ip), self.s5)
+        ip.section.option = '\n'.join(['', '', '', 'foo', '', '', ''])
+        ip.section.another = 'baz'
+        self.assertEqual(str(ip), self.s6)
+
 
 class suite(unittest.TestSuite):
     def __init__(self):

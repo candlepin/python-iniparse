@@ -183,6 +183,8 @@ class EmptyLine(LineType):
     def to_string(self):
         return ''
 
+    value = property(lambda _: '')
+
     def parse(cls, line):
         if line.strip(): return None
         return cls(line)
@@ -192,9 +194,11 @@ class EmptyLine(LineType):
 class ContinuationLine(LineType):
     regex = re.compile(r'^\s+(?P<value>.*)$')
 
-    def __init__(self, value, value_offset=8, line=None):
+    def __init__(self, value, value_offset=None, line=None):
         super(ContinuationLine, self).__init__(line)
         self.value = value
+        if value_offset is None:
+            value_offset = 8
         self.value_offset = value_offset
 
     def to_string(self):
@@ -235,19 +239,28 @@ class LineContainer(object):
             return self.contents[0].value
         else:
             return '\n'.join([('%s' % x.value) for x in self.contents
-                              if not isinstance(x, (CommentLine, EmptyLine))])
+                              if not isinstance(x, CommentLine)])
 
     def set_value(self, data):
         self.orgvalue = data
         lines = ('%s' % data).split('\n')
-        linediff = len(lines) - len(self.contents)
-        if linediff > 0:
-            for _ in range(linediff):
-                self.add(ContinuationLine(''))
-        elif linediff < 0:
-            self.contents = self.contents[:linediff]
-        for i,v in enumerate(lines):
-            self.contents[i].value = v
+
+        # If there is an existing ContinuationLine, use its offset
+        value_offset = None
+        for v in self.contents:
+            if isinstance(v, ContinuationLine):
+                value_offset = v.value_offset
+                break
+
+        # Rebuild contents list, preserving initial OptionLine
+        self.contents = self.contents[0:1]
+        self.contents[0].value = lines[0]
+        del lines[0]
+        for line in lines:
+            if line.strip():
+                self.add(ContinuationLine(line, value_offset))
+            else:
+                self.add(EmptyLine())
 
     name = property(get_name, set_name)
     value = property(get_value, set_value)
