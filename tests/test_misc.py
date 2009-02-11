@@ -1,4 +1,6 @@
 import unittest
+import ConfigParser
+from textwrap import dedent
 from StringIO import StringIO
 from iniparse import compat, ini
 
@@ -133,6 +135,62 @@ class test_custom_dict(unittest.TestCase):
     def test_custom_dict_not_supported(self):
         self.assertRaises(ValueError, compat.RawConfigParser, None, 'foo')
 
+class test_compat(unittest.TestCase):
+    s = dedent("""
+        [DEFAULT]
+        pi = 3.1415
+        three = 3
+
+        [sec]
+        opt = 6
+        three = 3.0
+        longopt = foo
+         bar
+
+        # empty line should not be part of value
+         baz
+
+         bat
+        """)
+
+    def test_configparser_behavior(self):
+        c = ConfigParser.ConfigParser()
+        c.readfp(StringIO(self.s))
+        self.assertEqual(c.sections(), ['sec'])
+        self.assertEqual(c.options('sec'), ['opt', 'longopt', 'pi', 'three'])
+        self.assertEqual(c.get('sec', 'longopt').split('\n'),
+                         ['foo', 'bar', 'baz', 'bat'])
+        c.set('sec', 'longopt', '\n'.join(['a', 'b', '', 'c', '', '', 'd']))
+        self.assertEqual(c.get('sec', 'longopt').split('\n'),
+                         ['a', 'b', '', 'c', '', '', 'd'])
+        o = StringIO()
+        c.write(o)
+        self.assertEqual(o.getvalue().split('\n'), [
+            '[DEFAULT]',
+            'pi = 3.1415',
+            'three = 3',
+            '',
+            '[sec]',
+            'opt = 6',
+            'longopt = a',
+            '\tb',
+            '\t',
+            '\tc',
+            '\t',
+            '\t',
+            '\td',
+            'three = 3.0',
+            '',
+            ''])
+
+    def test_default_section(self):
+        c = compat.ConfigParser()
+        c.readfp(StringIO(self.s))
+        self.assertEqual(c.sections(), ['sec'])
+
+    def test_multiline(self):
+        pass
+
 class suite(unittest.TestSuite):
     def __init__(self):
         unittest.TestSuite.__init__(self, [
@@ -141,4 +199,5 @@ class suite(unittest.TestSuite):
                 unittest.makeSuite(test_multiline_with_comments, 'test'),
                 unittest.makeSuite(test_empty_file, 'test'),
                 unittest.makeSuite(test_custom_dict, 'test'),
+                unittest.makeSuite(test_compat, 'test'),
     ])

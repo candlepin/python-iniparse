@@ -454,6 +454,7 @@ class INIConfig(config.ConfigNamespace):
 
     def __iter__(self):
         d = set()
+        d.add(DEFAULTSECT)
         for x in self._data.contents:
             if isinstance(x, LineContainer):
                 if x.name not in d:

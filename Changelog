@@ -1,3 +1,6 @@
+2009-02-10
+* Skip DEFAULT section when listing sections (issue 8)
+
 2009-02-03
 * Bugfixes for continuation line behavior, based on patch by
   sidnei.da.silva - (1) preserve empty lines in multi-line
