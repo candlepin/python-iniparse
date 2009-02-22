@@ -1,3 +1,8 @@
+2009-02-22
+* Replicate ConfigParser behavior regarding empty lines in
+  multi-line values - empty lines are stripped on parsing,
+  but preserved when the value is explicitly set.
+
 2009-02-10
 * Skip DEFAULT section when listing sections (issue 8)
 

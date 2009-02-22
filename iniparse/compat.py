@@ -119,7 +119,8 @@ class RawConfigParser(object):
         if vars is not None and option in vars:
             value = vars[option]
         try:
-            return self.data[section][option]
+            sec = self.data[section]
+            return sec._compat_get(option)
         except KeyError:
             raise NoOptionError(option, section)
 

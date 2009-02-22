@@ -309,6 +309,7 @@ class INISection(config.ConfigNamespace):
     _defaults = None
     _optionxformvalue = None
     _optionxformsource = None
+    _compat_skip_empty_lines = set()
     def __init__(self, lineobj, defaults = None,
                        optionxformvalue=None, optionxformsource=None):
         self._lines = [lineobj]
@@ -318,6 +319,25 @@ class INISection(config.ConfigNamespace):
         self._options = {}
 
     _optionxform = _make_xform_property('_optionxform')
+
+    def _compat_get(self, key):
+        # identical to __getitem__ except that _compat_XXX
+        # is checked for backward-compatible handling
+        if key == '__name__':
+            return self._lines[-1].name
+        if self._optionxform: key = self._optionxform(key)
+        try:
+            value = self._options[key].value
+            del_empty = key in self._compat_skip_empty_lines
+        except KeyError:
+            if self._defaults and key in self._defaults._options:
+                value = self._defaults._options[key].value
+                del_empty = key in self._defaults._compat_skip_empty_lines
+            else:
+                raise
+        if del_empty:
+            value = re.sub('\n+', '\n', value)
+        return value
 
     def __getitem__(self, key):
         if key == '__name__':
@@ -334,6 +354,8 @@ class INISection(config.ConfigNamespace):
     def __setitem__(self, key, value):
         if self._optionxform: xkey = self._optionxform(key)
         else: xkey = key
+        if xkey in self._compat_skip_empty_lines:
+            self._compat_skip_empty_lines.remove(xkey)
         if xkey not in self._options:
             # create a dummy object - value may have multiple lines
             obj = LineContainer(OptionLine(key, ''))
@@ -504,6 +526,7 @@ class INIConfig(config.ConfigNamespace):
         cur_section_name = None
         cur_option_name = None
         pending_lines = []
+        pending_empty_lines = False
         try:
             fname = fp.name
         except AttributeError:
@@ -537,8 +560,12 @@ class INIConfig(config.ConfigNamespace):
 
             if isinstance(lineobj, ContinuationLine):
                 if cur_option:
-                    cur_option.extend(pending_lines)
-                    pending_lines = []
+                    if pending_lines:
+                        cur_option.extend(pending_lines)
+                        pending_lines = []
+                        if pending_empty_lines:
+                            optobj._compat_skip_empty_lines.add(cur_option_name)
+                            pending_empty_lines = False
                     cur_option.add(lineobj)
                 else:
                     # illegal continuation line - convert to comment
@@ -548,8 +575,12 @@ class INIConfig(config.ConfigNamespace):
                     lineobj = make_comment(line)
 
             if isinstance(lineobj, OptionLine):
-                cur_section.extend(pending_lines)
-                pending_lines = []
+                if pending_lines:
+                    cur_option.extend(pending_lines)
+                    pending_lines = []
+                    if pending_empty_lines:
+                        optobj._compat_skip_empty_lines.add(cur_option_name)
+                        pending_empty_lines = False
                 cur_option = LineContainer(lineobj)
                 cur_section.add(cur_option)
                 if self._optionxform:
@@ -565,6 +596,7 @@ class INIConfig(config.ConfigNamespace):
             if isinstance(lineobj, SectionLine):
                 self._data.extend(pending_lines)
                 pending_lines = []
+                pending_empty_lines = False
                 cur_section = LineContainer(lineobj)
                 self._data.add(cur_section)
                 cur_option = None
@@ -586,6 +618,8 @@ class INIConfig(config.ConfigNamespace):
 
             if isinstance(lineobj, (CommentLine, EmptyLine)):
                 pending_lines.append(lineobj)
+                if isinstance(lineobj, EmptyLine):
+                    pending_empty_lines = True
 
         self._data.extend(pending_lines)
         if line and line[-1]=='\n':

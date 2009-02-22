@@ -136,10 +136,19 @@ class test_custom_dict(unittest.TestCase):
         self.assertRaises(ValueError, compat.RawConfigParser, None, 'foo')
 
 class test_compat(unittest.TestCase):
-    s = dedent("""
+    """Miscellaneous compatibility tests."""
+
+    s = dedent("""\
         [DEFAULT]
         pi = 3.1415
         three = 3
+        poet = e e
+
+             cummings
+        NH =
+         live free
+
+         or die
 
         [sec]
         opt = 6
@@ -151,22 +160,48 @@ class test_compat(unittest.TestCase):
          baz
 
          bat
+
         """)
+
+    def do_test(self, c):
+        # default section is not acknowledged
+        self.assertEqual(c.sections(), ['sec'])
+        # options in the default section are merged with other sections
+        self.assertEqual(sorted(c.options('sec')),
+                         ['longopt', 'nh', 'opt', 'pi', 'poet', 'three'])
+
+        # empty lines are stripped from multi-line values
+        self.assertEqual(c.get('sec', 'poet').split('\n'),
+                         ['e e', 'cummings'])
+        self.assertEqual(c.get('DEFAULT', 'poet').split('\n'),
+                         ['e e', 'cummings'])
+        self.assertEqual(c.get('sec', 'longopt').split('\n'),
+                         ['foo', 'bar', 'baz', 'bat'])
+        self.assertEqual(c.get('sec', 'NH').split('\n'),
+                         ['', 'live free', 'or die'])
+
+        # empty lines are preserved on explicitly set values
+        c.set('sec', 'longopt', '\n'.join(['a', 'b', '', 'c', '', '', 'd']))
+        c.set('DEFAULT', 'NH', '\nlive free\n\nor die')
+        self.assertEqual(c.get('sec', 'longopt').split('\n'),
+                         ['a', 'b', '', 'c', '', '', 'd'])
+        self.assertEqual(c.get('sec', 'NH').split('\n'),
+                         ['', 'live free', '', 'or die'])
 
     def test_configparser_behavior(self):
         c = ConfigParser.ConfigParser()
         c.readfp(StringIO(self.s))
-        self.assertEqual(c.sections(), ['sec'])
-        self.assertEqual(c.options('sec'), ['opt', 'longopt', 'pi', 'three'])
-        self.assertEqual(c.get('sec', 'longopt').split('\n'),
-                         ['foo', 'bar', 'baz', 'bat'])
-        c.set('sec', 'longopt', '\n'.join(['a', 'b', '', 'c', '', '', 'd']))
-        self.assertEqual(c.get('sec', 'longopt').split('\n'),
-                         ['a', 'b', '', 'c', '', '', 'd'])
+        self.do_test(c)
         o = StringIO()
         c.write(o)
         self.assertEqual(o.getvalue().split('\n'), [
             '[DEFAULT]',
+            'poet = e e',
+            '\tcummings',
+            'nh = ',
+            '\tlive free',
+            '\t',
+            '\tor die',
             'pi = 3.1415',
             'three = 3',
             '',
@@ -183,13 +218,36 @@ class test_compat(unittest.TestCase):
             '',
             ''])
 
-    def test_default_section(self):
+    def test_inicompat(self):
         c = compat.ConfigParser()
         c.readfp(StringIO(self.s))
-        self.assertEqual(c.sections(), ['sec'])
-
-    def test_multiline(self):
-        pass
+        self.do_test(c)
+        o = StringIO()
+        c.write(o)
+        self.assertEqual(o.getvalue().split('\n'), [
+            '[DEFAULT]',
+            'pi = 3.1415',
+            'three = 3',
+            'poet = e e',
+            '',
+            '     cummings',
+            'NH =',
+            ' live free',
+            '',
+            ' or die',
+            '',
+            '[sec]',
+            'opt = 6',
+            'three = 3.0',
+            'longopt = a',
+            ' b',
+            '',
+            ' c',
+            '',
+            '',
+            ' d',
+            '',
+            ''])
 
 class suite(unittest.TestSuite):
     def __init__(self):
