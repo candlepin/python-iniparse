@@ -367,6 +367,8 @@ class INISection(config.ConfigNamespace):
 
     def __delitem__(self, key):
         if self._optionxform: key = self._optionxform(key)
+        if key in self._compat_skip_empty_lines:
+            self._compat_skip_empty_lines.remove(key)
         for l in self._lines:
             remaining = []
             for o in l.contents:

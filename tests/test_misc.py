@@ -153,6 +153,10 @@ class test_compat(unittest.TestCase):
         [sec]
         opt = 6
         three = 3.0
+        no-three = one
+         two
+
+         four
         longopt = foo
          bar
 
@@ -168,7 +172,7 @@ class test_compat(unittest.TestCase):
         self.assertEqual(c.sections(), ['sec'])
         # options in the default section are merged with other sections
         self.assertEqual(sorted(c.options('sec')),
-                         ['longopt', 'nh', 'opt', 'pi', 'poet', 'three'])
+                         ['longopt', 'nh', 'no-three', 'opt', 'pi', 'poet', 'three'])
 
         # empty lines are stripped from multi-line values
         self.assertEqual(c.get('sec', 'poet').split('\n'),
@@ -180,6 +184,26 @@ class test_compat(unittest.TestCase):
         self.assertEqual(c.get('sec', 'NH').split('\n'),
                          ['', 'live free', 'or die'])
 
+        # check that empy-line stripping happens on all access paths
+        # defaults()
+        self.assertEqual(c.defaults(), {
+            'poet': 'e e\ncummings',
+            'nh': '\nlive free\nor die',
+            'pi': '3.1415',
+            'three': '3',
+        })
+        # items()
+        l = c.items('sec')
+        l.sort()
+        self.assertEqual(l, [
+            ('longopt', 'foo\nbar\nbaz\nbat'),
+            ('nh', '\nlive free\nor die'),
+            ('no-three', 'one\ntwo\nfour'),
+            ('opt', '6'), ('pi', '3.1415'),
+            ('poet', 'e e\ncummings'),
+            ('three', '3.0')
+        ])
+
         # empty lines are preserved on explicitly set values
         c.set('sec', 'longopt', '\n'.join(['a', 'b', '', 'c', '', '', 'd']))
         c.set('DEFAULT', 'NH', '\nlive free\n\nor die')
@@ -187,9 +211,34 @@ class test_compat(unittest.TestCase):
                          ['a', 'b', '', 'c', '', '', 'd'])
         self.assertEqual(c.get('sec', 'NH').split('\n'),
                          ['', 'live free', '', 'or die'])
+        self.assertEqual(c.defaults(), {
+            'poet': 'e e\ncummings',
+            'nh': '\nlive free\n\nor die',
+            'pi': '3.1415',
+            'three': '3',
+        })
+        # items()
+        l = c.items('sec')
+        l.sort()
+        self.assertEqual(l, [
+            ('longopt', 'a\nb\n\nc\n\n\nd'),
+            ('nh', '\nlive free\n\nor die'),
+            ('no-three', 'one\ntwo\nfour'),
+            ('opt', '6'), ('pi', '3.1415'),
+            ('poet', 'e e\ncummings'),
+            ('three', '3.0')
+        ])
 
-    def test_configparser_behavior(self):
-        c = ConfigParser.ConfigParser()
+        # empty line special magic goes away after remove_option()
+        self.assertEqual(c.get('sec', 'no-three').split('\n'),
+                         ['one', 'two','four'])
+        c.remove_option('sec', 'no-three')
+        c.set('sec', 'no-three', 'q\n\nw')
+        self.assertEqual(c.get('sec', 'no-three'), 'q\n\nw')
+        c.remove_option('sec', 'no-three')
+
+    def do_configparser_test(self, cfg_class):
+        c = cfg_class()
         c.readfp(StringIO(self.s))
         self.do_test(c)
         o = StringIO()
@@ -218,8 +267,17 @@ class test_compat(unittest.TestCase):
             '',
             ''])
 
-    def test_inicompat(self):
-        c = compat.ConfigParser()
+    def test_py_rawcfg(self):
+        self.do_configparser_test(ConfigParser.RawConfigParser)
+
+    def test_py_cfg(self):
+        self.do_configparser_test(ConfigParser.ConfigParser)
+
+    def test_py_safecfg(self):
+        self.do_configparser_test(ConfigParser.SafeConfigParser)
+
+    def do_compat_test(self, cfg_class):
+        c = cfg_class()
         c.readfp(StringIO(self.s))
         self.do_test(c)
         o = StringIO()
@@ -248,6 +306,15 @@ class test_compat(unittest.TestCase):
             ' d',
             '',
             ''])
+
+    def test_py_rawcfg(self):
+        self.do_compat_test(compat.RawConfigParser)
+
+    def test_py_cfg(self):
+        self.do_compat_test(compat.ConfigParser)
+
+    def test_py_safecfg(self):
+        self.do_compat_test(compat.SafeConfigParser)
 
 class suite(unittest.TestSuite):
     def __init__(self):

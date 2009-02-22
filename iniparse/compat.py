@@ -37,8 +37,9 @@ class RawConfigParser(object):
 
     def defaults(self):
         d = {}
-        for name, lineobj in self.data._defaults._options:
-            d[name] = lineobj.value
+        secobj = self.data._defaults
+        for name in secobj._options:
+            d[name] = secobj._compat_get(name)
         return d
 
     def sections(self):
@@ -128,7 +129,7 @@ class RawConfigParser(object):
         try:
             ans = []
             for opt in self.data[section]:
-                ans.append((opt, self.data[section][opt]))
+                ans.append((opt, self.get(section, opt)))
             return ans
         except KeyError:
             raise NoSectionError(section)

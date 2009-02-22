@@ -1,4 +1,5 @@
 2009-02-22
+* Fix the defaults() method
 * Replicate ConfigParser behavior regarding empty lines in
   multi-line values - empty lines are stripped on parsing,
   but preserved when the value is explicitly set.
