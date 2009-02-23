@@ -1,4 +1,5 @@
 2009-02-22
+* Make INIConfig objects pickle-able
 * Fix the defaults() method
 * Replicate ConfigParser behavior regarding empty lines in
   multi-line values - empty lines are stripped on parsing,

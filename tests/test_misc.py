@@ -1,4 +1,5 @@
 import unittest
+import pickle
 import ConfigParser
 from textwrap import dedent
 from StringIO import StringIO
@@ -199,9 +200,10 @@ class test_compat(unittest.TestCase):
             ('longopt', 'foo\nbar\nbaz\nbat'),
             ('nh', '\nlive free\nor die'),
             ('no-three', 'one\ntwo\nfour'),
-            ('opt', '6'), ('pi', '3.1415'),
+            ('opt', '6'),
+            ('pi', '3.1415'),
             ('poet', 'e e\ncummings'),
-            ('three', '3.0')
+            ('three', '3.0'),
         ])
 
         # empty lines are preserved on explicitly set values
@@ -224,9 +226,10 @@ class test_compat(unittest.TestCase):
             ('longopt', 'a\nb\n\nc\n\n\nd'),
             ('nh', '\nlive free\n\nor die'),
             ('no-three', 'one\ntwo\nfour'),
-            ('opt', '6'), ('pi', '3.1415'),
+            ('opt', '6'),
+            ('pi', '3.1415'),
             ('poet', 'e e\ncummings'),
-            ('three', '3.0')
+            ('three', '3.0'),
         ])
 
         # empty line special magic goes away after remove_option()
@@ -316,6 +319,85 @@ class test_compat(unittest.TestCase):
     def test_py_safecfg(self):
         self.do_compat_test(compat.SafeConfigParser)
 
+class test_pickle(unittest.TestCase):
+    s = dedent("""\
+        [DEFAULT]
+        pi = 3.1415
+        three = 3
+        poet = e e
+
+             cummings
+        NH =
+         live free
+
+         or die
+
+        [sec]
+        opt = 6
+        three = 3.0
+        no-three = one
+         two
+
+         four
+
+        james = bond
+        """)
+
+    def do_compat_checks(self, c):
+        self.assertEqual(c.sections(), ['sec'])
+        self.assertEqual(sorted(c.options('sec')),
+                         ['james', 'nh', 'no-three', 'opt', 'pi', 'poet', 'three'])
+        self.assertEqual(c.defaults(), {
+            'poet': 'e e\ncummings',
+            'nh': '\nlive free\nor die',
+            'pi': '3.1415',
+            'three': '3',
+        })
+        l = c.items('sec')
+        l.sort()
+        self.assertEqual(l, [
+            ('james', 'bond'),
+            ('nh', '\nlive free\nor die'),
+            ('no-three', 'one\ntwo\nfour\n'),
+            ('opt', '6'),
+            ('pi', '3.1415'),
+            ('poet', 'e e\ncummings'),
+            ('three', '3.0'),
+        ])
+        self.do_ini_checks(c.data)
+
+    def do_ini_checks(self, c):
+        self.assertEqual(list(c), ['sec'])
+        self.assertEqual(sorted(c['sec']), ['james', 'nh', 'no-three', 'opt', 'pi', 'poet', 'three'])
+        self.assertEqual(c._defaults['pi'], '3.1415')
+        self.assertEqual(c.sec.opt, '6')
+        self.assertEqual(c.sec.three, '3.0')
+        self.assertEqual(c.sec['no-three'], 'one\ntwo\n\nfour\n')
+        self.assertEqual(c.sec.james, 'bond')
+        self.assertEqual(c.sec.pi, '3.1415')
+        self.assertEqual(c.sec.poet, 'e e\n\ncummings')
+        self.assertEqual(c.sec.NH, '\nlive free\n\nor die')
+        self.assertEqual(str(c), self.s)
+
+    def test_compat(self):
+        for cfg_class in (compat.ConfigParser, compat.RawConfigParser, compat.SafeConfigParser):
+            c = cfg_class()
+            c.readfp(StringIO(self.s))
+            self.do_compat_checks(c)
+            p = pickle.dumps(c)
+            c = None
+            c2 = pickle.loads(p)
+            self.do_compat_checks(c2)
+
+    def test_ini(self):
+        c = ini.INIConfig()
+        c._readfp(StringIO(self.s))
+        self.do_ini_checks(c)
+        p = pickle.dumps(c)
+        c = None
+        c2 = pickle.loads(p)
+        self.do_ini_checks(c2)
+
 class suite(unittest.TestSuite):
     def __init__(self):
         unittest.TestSuite.__init__(self, [
@@ -325,4 +407,5 @@ class suite(unittest.TestSuite):
                 unittest.makeSuite(test_empty_file, 'test'),
                 unittest.makeSuite(test_custom_dict, 'test'),
                 unittest.makeSuite(test_compat, 'test'),
+                unittest.makeSuite(test_pickle, 'test'),
     ])

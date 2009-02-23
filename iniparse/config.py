@@ -63,6 +63,12 @@ class ConfigNamespace(object):
         except AttributeError:
             self.__delitem__(name)
 
+    def __getstate__(self):
+        return self.__dict__
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+
 class Undefined(object):
     """Helper class used to hold undefined names until assignment.
 
