@@ -1,3 +1,6 @@
+2009-02-27
+* released 0.3.0
+
 2009-02-22
 * Make INIConfig objects pickle-able
 * Fix the defaults() method
