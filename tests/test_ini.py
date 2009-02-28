@@ -177,6 +177,8 @@ help = me
 I'm  = desperate     ; really!
 
 [section2]
+# comment and empty line before the first option
+
 just = what?
 just = kidding
 
@@ -233,6 +235,8 @@ but = also me
 I'm  = desperate     ; really!
 
 [section2]
+# comment and empty line before the first option
+
 just = what?
 just = kidding
 

@@ -358,7 +358,7 @@ class test_pickle(unittest.TestCase):
         self.assertEqual(l, [
             ('james', 'bond'),
             ('nh', '\nlive free\nor die'),
-            ('no-three', 'one\ntwo\nfour\n'),
+            ('no-three', 'one\ntwo\nfour'),
             ('opt', '6'),
             ('pi', '3.1415'),
             ('poet', 'e e\ncummings'),
@@ -372,7 +372,7 @@ class test_pickle(unittest.TestCase):
         self.assertEqual(c._defaults['pi'], '3.1415')
         self.assertEqual(c.sec.opt, '6')
         self.assertEqual(c.sec.three, '3.0')
-        self.assertEqual(c.sec['no-three'], 'one\ntwo\n\nfour\n')
+        self.assertEqual(c.sec['no-three'], 'one\ntwo\n\nfour')
         self.assertEqual(c.sec.james, 'bond')
         self.assertEqual(c.sec.pi, '3.1415')
         self.assertEqual(c.sec.poet, 'e e\n\ncummings')

@@ -578,7 +578,7 @@ class INIConfig(config.ConfigNamespace):
 
             if isinstance(lineobj, OptionLine):
                 if pending_lines:
-                    cur_option.extend(pending_lines)
+                    cur_section.extend(pending_lines)
                     pending_lines = []
                     if pending_empty_lines:
                         optobj._compat_skip_empty_lines.add(cur_option_name)
