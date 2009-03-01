@@ -2,6 +2,7 @@ import unittest, doctest
 
 import test_ini
 import test_misc
+import test_fuzz
 import test_compat
 import test_unicode
 from iniparse import config
@@ -14,6 +15,7 @@ class suite(unittest.TestSuite):
                 doctest.DocTestSuite(ini),
                 test_ini.suite(),
                 test_misc.suite(),
+                test_fuzz.suite(),
                 test_compat.suite(),
                 test_unicode.suite(),
         ])
