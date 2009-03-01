@@ -404,7 +404,7 @@ class INISection(config.ConfigNamespace):
 
 
 def make_comment(line):
-    return CommentLine(line.rstrip())
+    return CommentLine(line.rstrip('\n'))
 
 
 def readline_iterator(f):
