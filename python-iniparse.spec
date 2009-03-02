@@ -1,7 +1,7 @@
 %{!?python_sitelib: %define python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
 
 Name:           python-iniparse
-Version:        0.3.0
+Version:        0.3.1
 Release:        1%{?dist}
 Summary:        Python Module for Accessing and Modifying Configuration Data in INI files
 Group:          Development/Libraries
@@ -48,6 +48,8 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Mon Mar 2 2009 Paramjit Oberoi <param@cs.wisc.edu> - 0.3.1-1
+- Release 0.3.1
 * Fri Feb 27 2009 Paramjit Oberoi <param@cs.wisc.edu> - 0.3.0-1
 - Release 0.3.0
 * Tue Dec 6 2008 Paramjit Oberoi <param@cs.wisc.edu> - 0.2.4-1

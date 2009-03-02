@@ -1,3 +1,9 @@
+2009-03-02
+* released 0.3.1
+
+2009-03-01
+* Fix empty line bugs introduced by the compatibility hack
+
 2009-02-27
 * released 0.3.0
 
