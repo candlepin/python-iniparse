@@ -1,8 +1,8 @@
 import re
+import os
 import random
 import unittest
 import ConfigParser
-from textwrap import dedent
 from StringIO import StringIO
 from iniparse import compat, ini
 
@@ -69,7 +69,11 @@ def random_ini_file():
 class test_fuzz(unittest.TestCase):
     def test_fuzz(self):
         random.seed(42)
-        for i in range(100):
+        try:
+            num_iter = int(os.environ['INIPARSE_FUZZ_ITERATIONS'])
+        except (KeyError, ValueError):
+            num_iter = 100
+        for i in range(num_iter):
             # parse random file with errors disabled
             s = random_ini_file()
             c = ini.INIConfig(parse_exc=False)
@@ -97,7 +101,9 @@ class test_fuzz(unittest.TestCase):
             self.assertEqualSorted(cc_py.sections(), cc.sections())
             self.assertEqualSorted(cc_py.defaults().items(), cc.defaults().items())
             for sec in cc_py.sections():
-                self.assertEqualSorted(cc_py.items(sec), cc.items(sec))
+                self.assertEqualSorted(cc_py.options(sec), cc.options(sec))
+                for opt in cc_py.options(sec):
+                    self.assertEqual(cc_py.get(sec, opt), cc.get(sec, opt))
 
     def assertEqualSorted(self, l1, l2):
         l1.sort()
