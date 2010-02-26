@@ -21,6 +21,7 @@ Example:
     >>> print cfg['foo-ext'].special
     1
     >>> cfg.foo.newopt = 'hi!'
+    >>> cfg.baz.enabled = 0
 
     >>> print cfg
     # configure foo-application
@@ -30,6 +31,9 @@ Example:
     newopt = hi!
     [foo-ext]
     special = 1
+    <BLANKLINE>
+    [baz]
+    enabled = 0
 
 """
 
@@ -41,6 +45,7 @@ import re
 from ConfigParser import DEFAULTSECT, ParsingError, MissingSectionHeaderError
 
 import config
+import compat
 
 class LineType(object):
     line = None
@@ -157,6 +162,14 @@ class OptionLine(LineType):
         return cls(name, value, sep, comment, csep, coff, line)
     parse = classmethod(parse)
 
+
+def change_comment_syntax(comment_chars='%;#', allow_rem=False):
+    comment_chars = re.sub(r'([\]\-\^])', r'\\\1', comment_chars)
+    regex = r'^(?P<csep>[%s]' % comment_chars
+    if allow_rem:
+        regex += '|[rR][eE][mM]'
+    regex += r')(?P<comment>.*)$'
+    CommentLine.regex = re.compile(regex)
 
 class CommentLine(LineType):
     regex = re.compile(r'^(?P<csep>[;#]|[rR][eE][mM])'
@@ -628,3 +641,48 @@ class INIConfig(config.ConfigNamespace):
         if exc:
             raise exc
 
+
+def tidy(cfg):
+    """Clean up blank lines.
+
+    This functions makes the configuration look clean and
+    handwritten - consecutive empty lines and empty lines at
+    the start of the file are removed, and one is guaranteed
+    to be at the end of the file.
+    """
+
+    if isinstance(cfg, compat.RawConfigParser):
+        cfg = cfg.data
+    cont = cfg._data.contents
+    i = 1
+    while i < len(cont):
+        if isinstance(cont[i], LineContainer):
+            tidy_section(cont[i])
+            i += 1
+        elif (isinstance(cont[i-1], EmptyLine) and
+              isinstance(cont[i], EmptyLine)):
+            del cont[i]
+        else:
+            i += 1
+
+    # Remove empty first line
+    if cont and isinstance(cont[0], EmptyLine):
+        del cont[0]
+
+    # Ensure a last line
+    if cont and not isinstance(cont[-1], EmptyLine):
+        cont.append(EmptyLine())
+
+def tidy_section(lc):
+    cont = lc.contents
+    i = 1
+    while i < len(cont):
+        if (isinstance(cont[i-1], EmptyLine) and
+            isinstance(cont[i], EmptyLine)):
+            del cont[i]
+        else:
+            i += 1
+
+    # Remove empty first line
+    if len(cont) > 1 and isinstance(cont[1], EmptyLine):
+        del cont[1]

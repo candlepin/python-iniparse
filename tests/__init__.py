@@ -5,6 +5,7 @@ import test_misc
 import test_fuzz
 import test_compat
 import test_unicode
+import test_tidy
 from iniparse import config
 from iniparse import ini
 
@@ -18,4 +19,5 @@ class suite(unittest.TestSuite):
                 test_fuzz.suite(),
                 test_compat.suite(),
                 test_unicode.suite(),
+                test_tidy.suite(),
         ])

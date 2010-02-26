@@ -1,3 +1,4 @@
+import re
 import unittest
 import pickle
 import ConfigParser
@@ -398,6 +399,53 @@ class test_pickle(unittest.TestCase):
         c2 = pickle.loads(p)
         self.do_ini_checks(c2)
 
+class test_comment_syntax(unittest.TestCase):
+    """Test changing comment syntax with change_comment_syntax"""
+
+    def test_regex(self):
+        # original regular expression
+        org_regex = re.compile(r'^(?P<csep>[;#]|[rR][eE][mM])(?P<comment>.*)$')
+        ini.change_comment_syntax(';#', True)
+        self.assertEqual(ini.CommentLine.regex, org_regex)
+        
+        # mercurial-safe comment line regex, as given by Steve Borho & Paul Lambert
+        # bitbucket.org/tortoisehg/stable/src/tip/tortoisehg/hgtk/thgconfig.py#cl-1084
+        # http://groups.google.com/group/iniparse-discuss/msg/b41a54aa185a9b7c
+        hg_regex = re.compile(r'^(?P<csep>[%;#])(?P<comment>.*)$')
+        ini.change_comment_syntax('%;#', False)
+        self.assertEqual(ini.CommentLine.regex, hg_regex)
+
+        # change_comment_syntax() defaults to hg regex
+        ini.change_comment_syntax()
+        self.assertEqual(ini.CommentLine.regex, hg_regex)
+
+        # test escaping of special chars in pattern
+        regex = re.compile(r'^(?P<csep>[;#\-\^[\]])(?P<comment>.*)$')
+        ini.change_comment_syntax(';#-^[]')
+        self.assertEqual(ini.CommentLine.regex, regex)
+
+    def test_ignore_includes(self):
+        ini.change_comment_syntax()
+        cfg = ini.INIConfig(StringIO(dedent("""
+            # This is a mercurial-style config
+            % include foobar
+
+            [ui]
+            username = Firstname Lastname <a@b.c>
+            """)))
+        self.assertEqual(cfg.ui.username, 'Firstname Lastname <a@b.c>')
+        self.assertEqual(str(cfg), dedent("""
+            # This is a mercurial-style config
+            % include foobar
+
+            [ui]
+            username = Firstname Lastname <a@b.c>
+            """))
+
+    def tearDown(self):
+        ini.change_comment_syntax(';#', True)
+
+
 class suite(unittest.TestSuite):
     def __init__(self):
         unittest.TestSuite.__init__(self, [
@@ -408,4 +456,5 @@ class suite(unittest.TestSuite):
                 unittest.makeSuite(test_custom_dict, 'test'),
                 unittest.makeSuite(test_compat, 'test'),
                 unittest.makeSuite(test_pickle, 'test'),
+                unittest.makeSuite(test_comment_syntax, 'test'),
     ])

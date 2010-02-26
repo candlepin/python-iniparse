@@ -99,12 +99,12 @@ class test_fuzz(unittest.TestCase):
                 cc_py = ConfigParser.RawConfigParser()
                 cc_py.readfp(StringIO(s))
                 # compare the two configparsers
-                self.assertEqualSorted(cc_py.sections(), cc.sections())
-                self.assertEqualSorted(cc_py.defaults().items(), cc.defaults().items())
-                for sec in cc_py.sections():
-                    self.assertEqualSorted(cc_py.options(sec), cc.options(sec))
-                    for opt in cc_py.options(sec):
-                        self.assertEqual(cc_py.get(sec, opt), cc.get(sec, opt))
+                self.assertEqualConfig(cc_py, cc)
+                # check that tidy does not change semantics
+                ini.tidy(cc)
+                cc_tidy = ConfigParser.RawConfigParser()
+                cc_tidy.readfp(StringIO(str(cc.data)))
+                self.assertEqualConfig(cc_py, cc_tidy)
             except AssertionError:
                 fname = 'fuzz-test-iter-%d.ini' % fuzz_iter
                 print 'Fuzz test failed at iteration', fuzz_iter
@@ -113,6 +113,14 @@ class test_fuzz(unittest.TestCase):
                 f.write(s)
                 f.close()
                 raise
+
+    def assertEqualConfig(self, c1, c2):
+        self.assertEqualSorted(c1.sections(), c2.sections())
+        self.assertEqualSorted(c1.defaults().items(), c2.defaults().items())
+        for sec in c1.sections():
+            self.assertEqualSorted(c1.options(sec), c2.options(sec))
+            for opt in c1.options(sec):
+                self.assertEqual(c1.get(sec, opt), c2.get(sec, opt))
 
     def assertEqualSorted(self, l1, l2):
         l1.sort()
