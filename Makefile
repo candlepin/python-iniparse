@@ -12,7 +12,7 @@ archive:
 	python setup.py sdist -d .
 	@echo "The archive is in ${PKGNAME}-$(SETUPVERSION).tar.gz"
 
-buildrpm: archive
+rpmbuild: archive
 	rpmbuild -ta ${PKGNAME}-$(SPECVERSION).tar.gz
 
 pychecker:
