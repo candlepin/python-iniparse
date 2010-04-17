@@ -218,6 +218,14 @@ but = also me
         self.assertEqual(p.section1.just.__class__, config.Undefined)
         self.assertEqual(p.section2.help.__class__, config.Undefined)
 
+    def test_newsection(self):
+        sio = StringIO(self.s1)
+        p = ini.INIConfig(sio)
+        p.new1.created = 1
+        setattr(getattr(p, 'new2'), 'created', 1)
+        self.assertEqual(p.new1.created, 1)
+        self.assertEqual(p.new2.created, 1)
+
     def test_order(self):
         sio = StringIO(self.s1)
         p = ini.INIConfig(sio)
