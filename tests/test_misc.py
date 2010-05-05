@@ -385,19 +385,19 @@ class test_pickle(unittest.TestCase):
             c = cfg_class()
             c.readfp(StringIO(self.s))
             self.do_compat_checks(c)
-            p = pickle.dumps(c)
-            c = None
-            c2 = pickle.loads(p)
-            self.do_compat_checks(c2)
+            for i in range(0, pickle.HIGHEST_PROTOCOL+1):
+                p = pickle.dumps(c, protocol=i)
+                c2 = pickle.loads(p)
+                self.do_compat_checks(c2)
 
     def test_ini(self):
         c = ini.INIConfig()
         c._readfp(StringIO(self.s))
         self.do_ini_checks(c)
-        p = pickle.dumps(c)
-        c = None
-        c2 = pickle.loads(p)
-        self.do_ini_checks(c2)
+        for i in range(0, pickle.HIGHEST_PROTOCOL+1):
+            p = pickle.dumps(c, protocol=i)
+            c2 = pickle.loads(p)
+            self.do_ini_checks(c2)
 
 class test_comment_syntax(unittest.TestCase):
     """Test changing comment syntax with change_comment_syntax"""
