@@ -47,6 +47,8 @@ class ConfigNamespace(object):
         try:
             return self.__getitem__(name)
         except KeyError:
+            if name.startswith('__') and name.endswith('__'):
+                raise AttributeError
             return Undefined(name, self)
 
     def __setattr__(self, name, value):
@@ -63,17 +65,12 @@ class ConfigNamespace(object):
         except AttributeError:
             self.__delitem__(name)
 
-    def __getstate__(self):
-        return self.__dict__
-
+    # During unpickling, __getattr__/__getitem__ raise exceptions since
+    # the data dicts have not been initialized yet.  So, the attribute
+    # lookup for __setstate__ gets a non-AttributeError exception.  Thus
+    # we need to define it explicitly.
     def __setstate__(self, state):
         self.__dict__.update(state)
-
-    __reduce__ = object.__reduce__
-    __reduce_ex__ = object.__reduce_ex__
-
-    def __getnewargs__(self):
-        return ()
 
 class Undefined(object):
     """Helper class used to hold undefined names until assignment.
