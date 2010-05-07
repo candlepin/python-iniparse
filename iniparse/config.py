@@ -70,7 +70,10 @@ class ConfigNamespace(object):
         self.__dict__.update(state)
 
     __reduce__ = object.__reduce__
-    __reduce_ex__ = None
+    __reduce_ex__ = object.__reduce_ex__
+
+    def __getnewargs__(self):
+        return ()
 
 class Undefined(object):
     """Helper class used to hold undefined names until assignment.
