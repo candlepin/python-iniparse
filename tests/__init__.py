@@ -6,6 +6,7 @@ import test_fuzz
 import test_compat
 import test_unicode
 import test_tidy
+import test_multiprocessing
 from iniparse import config
 from iniparse import ini
 
@@ -20,4 +21,5 @@ class suite(unittest.TestSuite):
                 test_compat.suite(),
                 test_unicode.suite(),
                 test_tidy.suite(),
+                test_multiprocessing.suite(),
         ])
