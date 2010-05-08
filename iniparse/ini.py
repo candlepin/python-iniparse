@@ -351,7 +351,7 @@ class INISection(config.ConfigNamespace):
             value = re.sub('\n+', '\n', value)
         return value
 
-    def __getitem__(self, key):
+    def _getitem(self, key):
         if key == '__name__':
             return self._lines[-1].name
         if self._optionxform: key = self._optionxform(key)
@@ -473,7 +473,7 @@ class INIConfig(config.ConfigNamespace):
     _optionxform = _make_xform_property('_optionxform', 'optionxform')
     _sectionxform = _make_xform_property('_sectionxform', 'optionxform')
 
-    def __getitem__(self, key):
+    def _getitem(self, key):
         if key == DEFAULTSECT:
             return self._defaults
         if self._sectionxform: key = self._sectionxform(key)

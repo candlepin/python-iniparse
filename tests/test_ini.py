@@ -223,8 +223,14 @@ but = also me
         p = ini.INIConfig(sio)
         p.new1.created = 1
         setattr(getattr(p, 'new2'), 'created', 1)
+        p.new3['created'] = 1
+        p['new4'].created = 1
+        p['new5']['created'] = 1
         self.assertEqual(p.new1.created, 1)
         self.assertEqual(p.new2.created, 1)
+        self.assertEqual(p.new3.created, 1)
+        self.assertEqual(p.new4.created, 1)
+        self.assertEqual(p.new5.created, 1)
 
     def test_order(self):
         sio = StringIO(self.s1)
