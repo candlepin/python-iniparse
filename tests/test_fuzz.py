@@ -4,7 +4,7 @@ import random
 import unittest
 import ConfigParser
 from StringIO import StringIO
-from iniparse import compat, ini
+from iniparse import compat, ini, tidy
 
 # TODO:
 #  tabs
@@ -101,7 +101,7 @@ class test_fuzz(unittest.TestCase):
                 # compare the two configparsers
                 self.assertEqualConfig(cc_py, cc)
                 # check that tidy does not change semantics
-                ini.tidy(cc)
+                tidy(cc)
                 cc_tidy = ConfigParser.RawConfigParser()
                 cc_tidy.readfp(StringIO(str(cc.data)))
                 self.assertEqualConfig(cc_py, cc_tidy)

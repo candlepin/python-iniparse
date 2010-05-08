@@ -3,9 +3,10 @@
 # Copyright (c) 2007 Tim Lauridsen <tla@rasmil.dk>
 # All Rights Reserved.  See LICENSE-PSF & LICENSE for details.
 
-from ini import INIConfig, tidy, change_comment_syntax
+from ini import INIConfig, change_comment_syntax
 from config import BasicConfig, ConfigNamespace
 from compat import RawConfigParser, ConfigParser, SafeConfigParser
+from utils import tidy
 
 from ConfigParser import DuplicateSectionError,    \
                   NoSectionError, NoOptionError,   \
