@@ -1,3 +1,19 @@
+2010-06-12
+* released 0.4
+
+2010-05-08
+* reorganize code to remove circular imports
+* auto-create config settings when they are accessed via square bracket
+  syntax (for example, cfg[x][y]).  Previously this raised KeyError.
+
+2010-05-07
+* Ensure that __special__ method lookups don't cause config attributes
+  to be added.
+
+2010-05-06
+* Fix problems with pickling INIConfig objects.  This also fixes
+  multiprocessing problems.
+
 2010-04-17
 * released 0.3.2
 
