@@ -144,8 +144,7 @@ class test_comment_line(unittest.TestCase):
         '#this is a comment',
         ';; this is also a comment',
         '; so is this   ',
-        'Rem and this',
-        'remthis too!'
+        'Rem and this'
     ]
     def test_parsing(self):
         for l in self.lines:
