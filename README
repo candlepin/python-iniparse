@@ -19,7 +19,7 @@ completely rearranged whenever a program changes it. iniparse also allows
 making the order of entries in a config file significant, which is desirable
 in applications like image galleries.
 
-Website: http://code.google.com/p/iniparse/
+Website: https://github.com/candlepin/python-iniparse/
 Mailing List: iniparse-discuss@googlegroups.com
 
 Copyright (c) 2001-2008 Python Software Foundation
