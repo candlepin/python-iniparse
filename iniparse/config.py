@@ -86,6 +86,7 @@ class ConfigNamespace(object):
     def __setstate__(self, state):
         self.__dict__.update(state)
 
+
 class Undefined(object):
     """Helper class used to hold undefined names until assignment.
 
@@ -289,6 +290,3 @@ def update_config(target, source):
             update_config(myns, value)
         else:
             target[name] = value
-
-
-

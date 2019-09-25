@@ -6,13 +6,15 @@ from six import StringIO
 from textwrap import dedent
 from iniparse import compat, ini
 
+
 class CaseSensitiveConfigParser(compat.ConfigParser):
     """Case Sensitive version of ConfigParser"""
     def optionxform(self, option):
         """Use str()"""
         return str(option)
 
-class test_optionxform_override(unittest.TestCase):
+
+class TestOptionxFormOverride(unittest.TestCase):
     def test_derivedclass(self):
         c = CaseSensitiveConfigParser()
         c.add_section('foo')
@@ -52,7 +54,8 @@ class OnlyReadline:
     def readline(self):
         return self.sio.readline()
 
-class test_readline(unittest.TestCase):
+
+class TestReadline(unittest.TestCase):
     """Test that the file object passed to readfp only needs to
     support the .readline() method.  As of Python-2.4.4, this is
     true of the standard librariy's ConfigParser, and so other
@@ -91,7 +94,7 @@ baz=8
             self.assertEqual(s, ss.getvalue())
 
 
-class test_multiline_with_comments(unittest.TestCase):
+class TestMultilineWithComments(unittest.TestCase):
     """Test that multiline values are allowed to span comments."""
 
     s = """\
@@ -115,7 +118,8 @@ opt = 1
 [sec]
 opt = xyz""")
 
-class test_empty_file(unittest.TestCase):
+
+class TestEmptyFile(unittest.TestCase):
     """Test if it works with an blank file"""
 
     s = ""
@@ -133,11 +137,13 @@ class test_empty_file(unittest.TestCase):
 [sec]
 opt = xyz""")
 
-class test_custom_dict(unittest.TestCase):
+
+class TestCustomDict(unittest.TestCase):
     def test_custom_dict_not_supported(self):
         self.assertRaises(ValueError, compat.RawConfigParser, None, 'foo')
 
-class test_compat(unittest.TestCase):
+
+class TestCompat(unittest.TestCase):
     """Miscellaneous compatibility tests."""
 
     s = dedent("""\
@@ -272,13 +278,13 @@ class test_compat(unittest.TestCase):
             ''])
 
     def test_py_rawcfg(self):
-        self.do_configparser_test(ConfigParser.RawConfigParser)
+        self.do_configparser_test(configparser.RawConfigParser)
 
     def test_py_cfg(self):
-        self.do_configparser_test(ConfigParser.ConfigParser)
+        self.do_configparser_test(configparser.ConfigParser)
 
     def test_py_safecfg(self):
-        self.do_configparser_test(ConfigParser.SafeConfigParser)
+        self.do_configparser_test(configparser.SafeConfigParser)
 
     def do_compat_test(self, cfg_class):
         c = cfg_class()
@@ -320,7 +326,8 @@ class test_compat(unittest.TestCase):
     def test_py_safecfg(self):
         self.do_compat_test(compat.SafeConfigParser)
 
-class test_pickle(unittest.TestCase):
+
+class TestPickle(unittest.TestCase):
     s = dedent("""\
         [DEFAULT]
         pi = 3.1415
@@ -399,7 +406,8 @@ class test_pickle(unittest.TestCase):
             c2 = pickle.loads(p)
             self.do_ini_checks(c2)
 
-class test_comment_syntax(unittest.TestCase):
+
+class TestCommentSyntax(unittest.TestCase):
     """Test changing comment syntax with change_comment_syntax"""
 
     def test_regex(self):
@@ -446,15 +454,15 @@ class test_comment_syntax(unittest.TestCase):
         ini.change_comment_syntax(';#', True)
 
 
-class suite(unittest.TestSuite):
+class Suite(unittest.TestSuite):
     def __init__(self):
         unittest.TestSuite.__init__(self, [
-                unittest.makeSuite(test_optionxform_override, 'test'),
-                unittest.makeSuite(test_readline, 'test'),
-                unittest.makeSuite(test_multiline_with_comments, 'test'),
-                unittest.makeSuite(test_empty_file, 'test'),
-                unittest.makeSuite(test_custom_dict, 'test'),
-                unittest.makeSuite(test_compat, 'test'),
-                unittest.makeSuite(test_pickle, 'test'),
-                unittest.makeSuite(test_comment_syntax, 'test'),
+                unittest.makeSuite(TestOptionxFormOverride, 'test'),
+                unittest.makeSuite(TestReadline, 'test'),
+                unittest.makeSuite(TestMultilineWithComments, 'test'),
+                unittest.makeSuite(TestEmptyFile, 'test'),
+                unittest.makeSuite(TestCustomDict, 'test'),
+                unittest.makeSuite(TestCompat, 'test'),
+                unittest.makeSuite(TestPickle, 'test'),
+                unittest.makeSuite(TestCommentSyntax, 'test'),
     ])

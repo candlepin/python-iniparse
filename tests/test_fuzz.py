@@ -11,6 +11,7 @@ from iniparse import compat, ini, tidy
 #  tabs
 #  substitutions
 
+
 def random_string(maxlen=200):
     length = random.randint(0, maxlen)
     s = []
@@ -19,9 +20,11 @@ def random_string(maxlen=200):
 
     return ''.join(s)
 
+
 def random_space(maxlen=10):
     length = random.randint(0, maxlen)
     return ' '*length
+
 
 def random_ini_file():
     num_lines = random.randint(0, 100)
@@ -67,7 +70,8 @@ def random_ini_file():
 
     return '\n'.join(lines)
 
-class test_fuzz(unittest.TestCase):
+
+class TestFuzz(unittest.TestCase):
     def test_fuzz(self):
         random.seed(42)
         try:
@@ -127,8 +131,9 @@ class test_fuzz(unittest.TestCase):
     def assertEqualSorted(self, l1, l2):
         self.assertEqual(sorted(l1), sorted(l2))
 
-class suite(unittest.TestSuite):
+
+class Suite(unittest.TestSuite):
     def __init__(self):
         unittest.TestSuite.__init__(self, [
-                unittest.makeSuite(test_fuzz, 'test'),
-    ])
+                unittest.makeSuite(TestFuzz, 'test'),
+        ])

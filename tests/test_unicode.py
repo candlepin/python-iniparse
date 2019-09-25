@@ -1,8 +1,9 @@
 import unittest
 import six
-from iniparse import compat, ini
+from iniparse import ini
 
-class test_unicode(unittest.TestCase):
+
+class TestUnicode(unittest.TestCase):
     """Test files read in unicode-mode."""
 
     s1 = u"""\
@@ -41,8 +42,9 @@ baz = Marc-Andr\202
         self.assertEqual(i.foo.bar, 'mammal')
         self.assertEqual(i.foo.baz, u'Marc-Andr\202')
 
-class suite(unittest.TestSuite):
+
+class Suite(unittest.TestSuite):
     def __init__(self):
         unittest.TestSuite.__init__(self, [
-                unittest.makeSuite(test_unicode, 'test'),
+                unittest.makeSuite(TestUnicode, 'test'),
     ])

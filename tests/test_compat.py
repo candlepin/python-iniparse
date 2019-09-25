@@ -12,6 +12,7 @@ if sys.version_info[0] < 3:
 else:
     from test import support as test_support
 
+
 class SortedDict(UserDict.UserDict):
     def items(self):
         result = self.data.items()
@@ -25,12 +26,19 @@ class SortedDict(UserDict.UserDict):
 
     def values(self):
         result = self.items()
-        return [i[1] for i in values]
+        return [i[1] for i in result]
 
-    def iteritems(self): return iter(self.items())
-    def iterkeys(self): return iter(self.keys())
+    def iteritems(self):
+        return iter(self.items())
+
+    def iterkeys(self):
+        return iter(self.keys())
+
     __iter__ = iterkeys
-    def itervalues(self): return iter(self.values())
+
+    def itervalues(self):
+        return iter(self.values())
+
 
 class TestCaseBase(unittest.TestCase):
     def newconfig(self, defaults=None):
@@ -140,7 +148,6 @@ class TestCaseBase(unittest.TestCase):
         cf = self.fromstring("[section]\nnekey=nevalue\n",
                              defaults={"key":"value"})
         self.failUnless(cf.has_option("section", "Key"))
-
 
     def test_default_case_sensitivity(self):
         cf = self.newconfig({"foo": "Bar"})
@@ -459,6 +466,7 @@ class SafeConfigParserTestCase(ConfigParserTestCase):
         cf = self.newconfig()
         self.assertRaises(ValueError, cf.add_section, "DEFAULT")
 
+
 class SortedTestCase(RawConfigParserTestCase):
     def newconfig(self, defaults=None):
         self.cf = self.config_class(defaults=defaults, dict_type=SortedDict)
@@ -483,6 +491,7 @@ class SortedTestCase(RawConfigParserTestCase):
                           "o3 = 2\n"
                           "o4 = 1\n\n")
 
+
 def test_main():
     test_support.run_unittest(
         ConfigParserTestCase,
@@ -491,14 +500,16 @@ def test_main():
         SortedTestCase
     )
 
-class suite(unittest.TestSuite):
+
+class Suite(unittest.TestSuite):
     def __init__(self):
         unittest.TestSuite.__init__(self, [
                 unittest.makeSuite(RawConfigParserTestCase, 'test'),
                 unittest.makeSuite(ConfigParserTestCase, 'test'),
                 unittest.makeSuite(SafeConfigParserTestCase, 'test'),
-                #unittest.makeSuite(SortedTestCase, 'test'),
-    ])
+                # unittest.makeSuite(SortedTestCase, 'test')
+        ])
+
 
 if __name__ == "__main__":
     test_main()

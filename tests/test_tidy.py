@@ -2,11 +2,11 @@ import unittest
 from textwrap import dedent
 from six import StringIO
 
-from iniparse import tidy,INIConfig
-from iniparse.ini import  EmptyLine
+from iniparse import tidy, INIConfig
 from iniparse.compat import ConfigParser
 
-class test_tidy(unittest.TestCase):
+
+class TestTidy(unittest.TestCase):
     def setUp(self):
         self.cfg = INIConfig()
 
@@ -129,8 +129,8 @@ class test_tidy(unittest.TestCase):
             """))
 
 
-class suite(unittest.TestSuite):
+class Suite(unittest.TestSuite):
     def __init__(self):
         unittest.TestSuite.__init__(self, [
-                unittest.makeSuite(test_tidy, 'test'),
+                unittest.makeSuite(TestTidy, 'test'),
     ])

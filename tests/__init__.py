@@ -10,16 +10,17 @@ from . import test_multiprocessing
 from iniparse import config
 from iniparse import ini
 
-class suite(unittest.TestSuite):
+
+class Suite(unittest.TestSuite):
     def __init__(self):
         unittest.TestSuite.__init__(self, [
                 doctest.DocTestSuite(config),
                 doctest.DocTestSuite(ini),
-                test_ini.suite(),
-                test_misc.suite(),
-                test_fuzz.suite(),
-                test_compat.suite(),
-                test_unicode.suite(),
-                test_tidy.suite(),
-                test_multiprocessing.suite(),
+                test_ini.Suite(),
+                test_misc.Suite(),
+                test_fuzz.Suite(),
+                test_compat.Suite(),
+                test_unicode.Suite(),
+                test_tidy.Suite(),
+                test_multiprocessing.Suite(),
         ])
