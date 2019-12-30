@@ -148,7 +148,7 @@ class BasicConfig(ConfigNamespace):
     name.first = paramjit
     name.last = oberoi
 
-    Nested namepsaces are also namespaces:
+    Nested namespaces are also namespaces:
 
     >>> isinstance(n.name, ConfigNamespace)
     True
