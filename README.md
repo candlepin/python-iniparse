@@ -1,4 +1,7 @@
 Introduction to iniparse
+------------------------
+
+[![Build Status](https://travis-ci.org/candlepin/python-iniparse.svg?branch=master)](https://travis-ci.org/candlepin/python-iniparse)
 
 iniparse is a INI parser for Python which is:
 
@@ -11,7 +14,7 @@ iniparse is a INI parser for Python which is:
   possible when data is updated.
 
 * More convenient: Values can be accessed using dotted notation
-  (cfg.user.name), or using container syntax (cfg['user']['name']).
+  (`cfg.user.name`), or using container syntax (`cfg['user']['name']`).
 
 It is very useful for config files that are updated both by users and by
 programs, since it is very disorienting for a user to have her config file
