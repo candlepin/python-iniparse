@@ -28,6 +28,7 @@ import six
 
 from . import ini
 
+
 class RawConfigParser(object):
     def __init__(self, defaults=None, dict_type=dict):
         if dict_type != dict:
@@ -70,7 +71,7 @@ class RawConfigParser(object):
 
         The DEFAULT section is not acknowledged.
         """
-        return (section in self.data)
+        return section in self.data
 
     def options(self, section):
         """Return a list of option names for the given section name."""
@@ -115,8 +116,6 @@ class RawConfigParser(object):
     def get(self, section, option, vars=None):
         if not self.has_section(section):
             raise NoSectionError(section)
-        if vars is not None and option in vars:
-            value = vars[option]
 
         sec = self.data[section]
         if option in sec:
@@ -325,8 +324,7 @@ class SafeConfigParser(ConfigParser):
             elif c == "(":
                 m = self._interpvar_match(rest)
                 if m is None:
-                    raise InterpolationSyntaxError(option, section,
-                        "bad interpolation variable reference %r" % rest)
+                    raise InterpolationSyntaxError(option, section, "bad interpolation variable reference %r" % rest)
                 var = m.group(1)
                 rest = rest[m.end():]
                 try:

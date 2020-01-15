@@ -5,7 +5,8 @@ from iniparse import ini
 from iniparse import compat
 from iniparse import config
 
-class test_section_line(unittest.TestCase):
+
+class TestSectionLine(unittest.TestCase):
     invalid_lines = [
         '# this is a comment',
         '; this is a comment',
@@ -17,19 +18,21 @@ class test_section_line(unittest.TestCase):
         '[ice-cream] = mmmm',
         '-$%^',
     ]
+
     def test_invalid(self):
         for l in self.invalid_lines:
             p = ini.SectionLine.parse(l)
             self.assertEqual(p, None)
 
     lines = [
-        ('[section]' ,          ('section', None, None, -1)),
-        ('[se\ct%[ion\t]' ,     ('se\ct%[ion\t', None, None, -1)),
-        ('[sec tion]  ; hi' ,   ('sec tion', ' hi', ';', 12)),
-        ('[section]  #oops!' ,  ('section', 'oops!', '#', 11)),
-        ('[section]   ;  ' ,    ('section', '', ';', 12)),
-        ('[section]      ' ,    ('section', None, None, -1)),
+        ('[section]',          ('section', None, None, -1)),
+        ('[se\ct%[ion\t]',     ('se\ct%[ion\t', None, None, -1)),
+        ('[sec tion]  ; hi',   ('sec tion', ' hi', ';', 12)),
+        ('[section]  #oops!',  ('section', 'oops!', '#', 11)),
+        ('[section]   ;  ',    ('section', '', ';', 12)),
+        ('[section]      ',    ('section', None, None, -1)),
     ]
+
     def test_parsing(self):
         for l in self.lines:
             p = ini.SectionLine.parse(l[0])
@@ -53,13 +56,15 @@ class test_section_line(unittest.TestCase):
         ('[oldname]             ; comment', 'really long new name',
          '[really long new name] ; comment'),
     ]
+
     def test_preserve_indentation(self):
         for l in self.indent_test_lines:
             p = ini.SectionLine.parse(l[0])
             p.name = l[1]
             self.assertEqual(str(p), l[2])
 
-class test_option_line(unittest.TestCase):
+
+class TestOptionLine(unittest.TestCase):
     lines = [
         ('option = value', 'option', ' = ', 'value', None, None, -1),
         ('option:   value', 'option', ':   ', 'value', None, None, -1),
@@ -95,6 +100,7 @@ class test_option_line(unittest.TestCase):
         '[section=option]',
         'option',
     ]
+
     def test_invalid(self):
         for l in self.invalid_lines:
             p = ini.OptionLine.parse(l)
@@ -110,6 +116,7 @@ class test_option_line(unittest.TestCase):
         'option = value;2    ;; 4 5',
         'option = value     ; hi!',
     ]
+
     def test_printing(self):
         for l in self.print_lines:
             p = ini.OptionLine.parse(l)
@@ -122,6 +129,7 @@ class test_option_line(unittest.TestCase):
         ('option = value       ;comment', 'newoption', 'newval',
          'newoption = newval   ;comment'),
     ]
+
     def test_preserve_indentation(self):
         for l in self.indent_test_lines:
             p = ini.OptionLine.parse(l[0])
@@ -129,12 +137,14 @@ class test_option_line(unittest.TestCase):
             p.value = l[2]
             self.assertEqual(str(p), l[3])
 
-class test_comment_line(unittest.TestCase):
+
+class TestCommentLine(unittest.TestCase):
     invalid_lines = [
         '[section]',
         'option = value ;comment',
         '  # must start on first column',
     ]
+
     def test_invalid(self):
         for l in self.invalid_lines:
             p = ini.CommentLine.parse(l)
@@ -146,13 +156,15 @@ class test_comment_line(unittest.TestCase):
         '; so is this   ',
         'Rem and this'
     ]
+
     def test_parsing(self):
         for l in self.lines:
             p = ini.CommentLine.parse(l)
             self.assertEqual(str(p), l)
             self.assertEqual(p.to_string(), l.rstrip())
 
-class test_other_lines(unittest.TestCase):
+
+class TestOtherLines(unittest.TestCase):
     def test_empty(self):
         for s in ['asdf', '; hi', '  #rr', '[sec]', 'opt=val']:
             self.assertEqual(ini.EmptyLine.parse(s), None)
@@ -169,7 +181,7 @@ class test_other_lines(unittest.TestCase):
                              s.rstrip().replace('\t',' '))
 
 
-class test_ini(unittest.TestCase):
+class TestIni(unittest.TestCase):
     s1 = """
 [section1]
 help = me
@@ -393,12 +405,12 @@ another = baz
         self.assertEqual(str(ip), self.s6)
 
 
-class suite(unittest.TestSuite):
+class Suite(unittest.TestSuite):
     def __init__(self):
         unittest.TestSuite.__init__(self, [
-                unittest.makeSuite(test_section_line, 'test'),
-                unittest.makeSuite(test_option_line, 'test'),
-                unittest.makeSuite(test_comment_line, 'test'),
-                unittest.makeSuite(test_other_lines, 'test'),
-                unittest.makeSuite(test_ini, 'test'),
+                unittest.makeSuite(TestSectionLine, 'test'),
+                unittest.makeSuite(TestOptionLine, 'test'),
+                unittest.makeSuite(TestCommentLine, 'test'),
+                unittest.makeSuite(TestOtherLines, 'test'),
+                unittest.makeSuite(TestIni, 'test'),
         ])
