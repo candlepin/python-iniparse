@@ -2,17 +2,17 @@
 
 from setuptools import setup
 
-VERSION = '0.4'
+VERSION = '0.5'
 
 setup(name ='iniparse',
       version = VERSION,
       description = 'Accessing and Modifying INI files',
       author = 'Paramjit Oberoi',
-      author_email = 'param@cs.wisc.edu',
-      url = 'http://code.google.com/p/iniparse/',
+      author_email = 'chainsaw@redhat.com',
+      url = 'https://github.com/candlepin/python-iniparse',
       license = 'MIT',
       long_description = '''\
-iniparse is an INI parser for  Python which is API compatible
+iniparse is an INI parser for Python which is API compatible
 with the standard library's ConfigParser, preserves structure of INI
 files (order of sections & options, indentation, comments, and blank
 lines are preserved when data is updated), and is more convenient to
