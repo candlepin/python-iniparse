@@ -23,9 +23,12 @@ making the order of entries in a config file significant, which is desirable
 in applications like image galleries.
 
 Website: https://github.com/candlepin/python-iniparse/
-Mailing List: iniparse-discuss@googlegroups.com
+
 
 Copyright (c) 2001-2008 Python Software Foundation
+
 Copyright (c) 2004-2009 Paramjit Oberoi <param.cs.wisc.edu>
+
 Copyright (c) 2007 Tim Lauridsen <tla@rasmil.dk>
+
 All Rights Reserved.  See LICENSE-PSF & LICENSE for details.
