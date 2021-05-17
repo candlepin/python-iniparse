@@ -1,13 +1,13 @@
 %{!?python_sitelib: %define python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
 
 Name:           python-iniparse
-Version:        0.4
+Version:        0.5
 Release:        1%{?dist}
 Summary:        Python Module for Accessing and Modifying Configuration Data in INI files
 Group:          Development/Libraries
 License:        MIT
-URL:            http://code.google.com/p/iniparse/
-Source0:        http://iniparse.googlecode.com/files/iniparse-%{version}.tar.gz
+URL:            https://github.com/candlepin/python-iniparse
+Source0:        %{name}-%{version}.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires: python-setuptools
