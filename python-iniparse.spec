@@ -1,53 +1,66 @@
-%{!?python_sitelib: %define python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
+%global modname iniparse
 
-Name:           python-iniparse
+# Use the same directory of the main package for subpackage licence and docs
+%global _docdir_fmt %{name}
+
+Name:           python-%{modname}
 Version:        0.5
 Release:        1%{?dist}
 Summary:        Python Module for Accessing and Modifying Configuration Data in INI files
-Group:          Development/Libraries
-License:        MIT
-URL:            https://github.com/candlepin/python-iniparse
-Source0:        %{name}-%{version}.tar.gz
-BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-
-BuildRequires: python-setuptools
+License:        MIT and Python
+URL:            http://code.google.com/p/iniparse/
+Source0:        http://iniparse.googlecode.com/files/%{modname}-%{version}.tar.gz
 
 BuildArch: noarch
 
-%description
-iniparse is an INI parser for Python which is API compatible
-with the standard library's ConfigParser, preserves structure of INI
-files (order of sections & options, indentation, comments, and blank
-lines are preserved when data is updated), and is more convenient to
+%global _description \
+iniparse is an INI parser for Python which is API compatible\
+with the standard library's ConfigParser, preserves structure of INI\
+files (order of sections & options, indentation, comments, and blank\
+lines are preserved when data is updated), and is more convenient to\
 use.
 
-%prep
-%setup -q -n iniparse-%{version}
+%description %{_description}
 
+%package -n python3-%{modname}
+Summary:        %{summary}
+%{?python_provide:%python_provide python3-%{modname}}
+BuildRequires:  python3-devel
+BuildRequires:  python3-setuptools
+BuildRequires:  python3-six
+BuildRequires:  python3-test
+
+%description -n python3-%{modname} %{_description}
+
+Python 3 version.
+
+%prep
+%setup -q -n %{modname}-%{version}
+chmod -c -x html/index.html
 
 %build
-%{__python} setup.py build
+%py3_build
 
 %install
-rm -rf $RPM_BUILD_ROOT
-%{__python} setup.py install -O1 --skip-build --root $RPM_BUILD_ROOT
-# fixes
-chmod 644 $RPM_BUILD_ROOT//usr/share/doc/iniparse-%{version}/index.html
-mv $RPM_BUILD_ROOT/usr/share/doc/iniparse-%{version} $RPM_BUILD_ROOT/usr/share/doc/python-iniparse-%{version}
+%py3_install
+rm -vfr %{buildroot}%{_docdir}/*
 
-%clean
-rm -rf $RPM_BUILD_ROOT
+%check
+%{__python3} runtests.py
 
-
-%files
-%defattr(-,root,root,-)
-%doc  %{_docdir}/python-iniparse-%{version}/*
-%{python_sitelib}/iniparse
-%{python_sitelib}/iniparse-%{version}-py*.egg-info
+%files -n python3-%{modname}
+%license LICENSE LICENSE-PSF
+%doc README.md Changelog html/
+%{python3_sitelib}/%{modname}/
+%{python3_sitelib}/%{modname}-%{version}-*.egg-info/
 
 
 
 %changelog
+* Tue May 18 2021 Jiri Hnidek <jhnidek@redhat.com> - 0.5-1
+- Release 0.5
+- Moved project to https://github.com/candlepin/python-iniparse
+- Added support for Python 3
 * Sat Jun 12 2010 Paramjit Oberoi <param@cs.wisc.edu> - 0.4-1
 - Release 0.4
 * Sat Apr 17 2010 Paramjit Oberoi <param@cs.wisc.edu> - 0.3.2-1
