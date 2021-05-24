@@ -8,8 +8,8 @@ Version:        0.5
 Release:        1%{?dist}
 Summary:        Python Module for Accessing and Modifying Configuration Data in INI files
 License:        MIT and Python
-URL:            http://code.google.com/p/iniparse/
-Source0:        http://iniparse.googlecode.com/files/%{modname}-%{version}.tar.gz
+URL:            https://github.com/candlepin/python-iniparse
+Source0:        python-%{modname}-%{version}.tar.gz
 
 BuildArch: noarch
 
