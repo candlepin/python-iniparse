@@ -21,9 +21,8 @@ jobs:
   metadata:
     targets:
     - fedora-all
-- job: test
+- job: tests
   trigger: pull_request
-  unit_test:
-    execute:
-      script:
-        - python runtests.py
+  metadata:
+  targets:
+    - fedora-all
