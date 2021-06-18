@@ -79,7 +79,7 @@ rm -vfr %{buildroot}%{_docdir}/*
 * Tue Aug 7 2007 Paramjit Oberoi <param@cs.wisc.edu> - 0.2.1-1
 - Release 0.2.1
 * Fri Jul 27 2007 Tim Lauridsen <timlau@fedoraproject.org> - 0.2-3
-- relocated doc to %{_docdir}/python-iniparse-%{version}
+- relocated doc to /usr/share/doc/python-iniparse-0.2
 * Thu Jul 26 2007 Tim Lauridsen <timlau@fedoraproject.org> - 0.2-2
 - changed name from iniparse to python-iniparse
 * Tue Jul 17 2007 Tim Lauridsen <timlau@fedoraproject.org> - 0.2-1

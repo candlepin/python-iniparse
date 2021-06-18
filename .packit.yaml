@@ -1,0 +1,23 @@
+# See the documentation for more information:
+# https://packit.dev/docs/configuration/
+
+specfile_path: python-iniparse.spec
+
+# add or remove files that should be synced
+synced_files:
+    - python-iniparse.spec
+    - .packit.yaml
+
+# URL of upstream project
+upstream_project_url: https://github.com/candlepin/python-iniparse
+# name in upstream package repository/registry (e.g. in PyPI)
+upstream_package_name: python-iniparse
+# downstream (Fedora) RPM package name
+downstream_package_name: python-iniparse
+
+jobs:
+- job: copr_build
+  trigger: pull_request
+  metadata:
+    targets:
+    - fedora-all
