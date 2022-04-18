@@ -282,9 +282,14 @@ class LineContainer(object):
             else:
                 self.add(EmptyLine())
 
+    def get_line_number(self):
+       return self.contents[0].line_number if self.contents else None
+
     name = property(get_name, set_name)
 
     value = property(get_value, set_value)
+
+    line_number = property(get_line_number)
 
     def __str__(self):
         s = [x.__str__() for x in self.contents]
@@ -568,7 +573,6 @@ class INIConfig(config.ConfigNamespace):
 
             line_obj = self._parse(line)
             line_count += 1
-
             if not cur_section and not isinstance(line_obj, (CommentLine, EmptyLine, SectionLine)):
                 if self._parse_exc:
                     raise MissingSectionHeaderError(fname, line_count, line)
@@ -643,6 +647,9 @@ class INIConfig(config.ConfigNamespace):
                 pending_lines.append(line_obj)
                 if isinstance(line_obj, EmptyLine):
                     pending_empty_lines = True
+
+            if line_obj:
+                line_obj.line_number = line_count
 
         self._data.extend(pending_lines)
         if line and line[-1] == '\n':
