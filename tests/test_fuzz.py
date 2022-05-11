@@ -102,7 +102,7 @@ class TestFuzz(unittest.TestCase):
                 cc = compat.RawConfigParser()
                 cc.readfp(StringIO(s))
                 cc_py = configparser.RawConfigParser()
-                cc_py.readfp(StringIO(s))
+                cc_py.read_file(StringIO(s))
                 # compare the two configparsers
                 self.assertEqualConfig(cc_py, cc)
                 # check that tidy does not change semantics
