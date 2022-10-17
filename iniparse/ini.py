@@ -49,7 +49,7 @@ import six
 from . import config
 
 
-class LineType(object):
+class LineType:
     line = None
 
     def __init__(self, line=None):
@@ -232,7 +232,7 @@ class ContinuationLine(LineType):
     parse = classmethod(parse)
 
 
-class LineContainer(object):
+class LineContainer:
     def __init__(self, d=None):
         self.contents = []
         self.orgvalue = None

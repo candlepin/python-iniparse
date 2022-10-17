@@ -1,4 +1,4 @@
-class ConfigNamespace(object):
+class ConfigNamespace:
     """Abstract class representing the interface of Config objects.
 
     A ConfigNamespace is a collection of names mapped to values, where
@@ -87,7 +87,7 @@ class ConfigNamespace(object):
         self.__dict__.update(state)
 
 
-class Undefined(object):
+class Undefined:
     """Helper class used to hold undefined names until assignment.
 
     This class helps create any undefined subsections when an

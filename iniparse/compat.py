@@ -29,7 +29,7 @@ import six
 from . import ini
 
 
-class RawConfigParser(object):
+class RawConfigParser:
     def __init__(self, defaults=None, dict_type=dict):
         if dict_type != dict:
             raise ValueError('Custom dict types not supported')
@@ -186,7 +186,7 @@ class RawConfigParser(object):
         return True
 
 
-class ConfigDict(object):
+class ConfigDict:
     """Present a dict interface to a ini section."""
 
     def __init__(self, cfg, section, vars):
