@@ -161,7 +161,7 @@ class BasicConfig(ConfigNamespace):
 
     Finally, values can be read from a file as follows:
 
-    >>> from six import StringIO
+    >>> from io import StringIO
     >>> sio = StringIO('''
     ... # comment
     ... ui.height = 100

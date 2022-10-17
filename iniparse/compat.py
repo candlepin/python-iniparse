@@ -24,8 +24,6 @@ from .configparser import DuplicateSectionError,    \
 from .configparser import Error, InterpolationError, \
                    MissingSectionHeaderError, ParsingError
 
-import six
-
 from . import ini
 
 
@@ -91,7 +89,7 @@ class RawConfigParser:
         filename may also be given.
         """
         files_read = []
-        if isinstance(filenames, six.string_types):
+        if isinstance(filenames, str):
             filenames = [filenames]
         for filename in filenames:
             try:
@@ -284,7 +282,7 @@ class SafeConfigParser(ConfigParser):
     _badpercent_re = re.compile(r"%[^%]|%$")
 
     def set(self, section, option, value):
-        if not isinstance(value, six.string_types):
+        if not isinstance(value, str):
             raise TypeError("option values must be strings")
         # check for bad percent signs:
         # first, replace all "good" interpolations

@@ -1,5 +1,5 @@
 from iniparse import compat as ConfigParser
-from six import StringIO
+from io import StringIO
 try:
     import UserDict
 except ImportError:

@@ -7,7 +7,7 @@
 
 Example:
 
-    >>> from six import StringIO
+    >>> from io import StringIO
     >>> sio = StringIO('''# configure foo-application
     ... [foo]
     ... bar1 = qualia
@@ -43,8 +43,6 @@ Example:
 
 import re
 from .configparser import DEFAULTSECT, ParsingError, MissingSectionHeaderError
-
-import six
 
 from . import config
 
@@ -566,7 +564,7 @@ class INIConfig(config.ConfigNamespace):
 
         for line in readline_iterator(fp):
             # Check for BOM on first line
-            if line_count == 0 and isinstance(line, six.text_type):
+            if line_count == 0 and isinstance(line, str):
                 if line[0] == u'\ufeff':
                     line = line[1:]
                     self._bom = True

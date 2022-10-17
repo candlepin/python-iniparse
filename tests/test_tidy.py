@@ -1,6 +1,6 @@
 import unittest
 from textwrap import dedent
-from six import StringIO
+from io import StringIO
 
 from iniparse import tidy, INIConfig
 from iniparse.compat import ConfigParser
