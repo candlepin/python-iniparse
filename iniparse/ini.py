@@ -81,7 +81,7 @@ class SectionLine(LineType):
 
     def __init__(self, name, comment=None, comment_separator=None,
                              comment_offset=-1, line=None):
-        super(SectionLine, self).__init__(line)
+        super().__init__(line)
         self.name = name
         self.comment = comment
         self.comment_separator = comment_separator
@@ -108,7 +108,7 @@ class SectionLine(LineType):
 class OptionLine(LineType):
     def __init__(self, name, value, separator=' = ', comment=None,
                  comment_separator=None, comment_offset=-1, line=None):
-        super(OptionLine, self).__init__(line)
+        super().__init__(line)
         self.name = name
         self.value = value
         self.separator = separator
@@ -177,7 +177,7 @@ class CommentLine(LineType):
                        r'(?P<comment>.*)$')
 
     def __init__(self, comment='', separator='#', line=None):
-        super(CommentLine, self).__init__(line)
+        super().__init__(line)
         self.comment = comment
         self.separator = separator
 
@@ -212,7 +212,7 @@ class ContinuationLine(LineType):
     regex = re.compile(r'^\s+(?P<value>.*)$')
 
     def __init__(self, value, value_offset=None, line=None):
-        super(ContinuationLine, self).__init__(line)
+        super().__init__(line)
         self.value = value
         if value_offset is None:
             value_offset = 8
