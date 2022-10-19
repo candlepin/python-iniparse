@@ -1,8 +1,13 @@
+from typing import TYPE_CHECKING, List
+
 from . import compat
-from .ini import LineContainer, EmptyLine
+from .ini import EmptyLine, LineContainer
+
+if TYPE_CHECKING:
+    from .ini import LineType
 
 
-def tidy(cfg):
+def tidy(cfg: compat.RawConfigParser):
     """Clean up blank lines.
 
     This functions makes the configuration look clean and
@@ -34,9 +39,9 @@ def tidy(cfg):
         cont.append(EmptyLine())
 
 
-def tidy_section(lc):
-    cont = lc.contents
-    i = 1
+def tidy_section(lc: "LineContainer"):
+    cont: List[LineType] = lc.contents
+    i: int = 1
     while i < len(cont):
         if isinstance(cont[i-1], EmptyLine) and isinstance(cont[i], EmptyLine):
             del cont[i]
