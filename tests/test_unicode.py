@@ -1,5 +1,5 @@
 import unittest
-import six
+from io import StringIO
 from iniparse import ini
 
 
@@ -18,14 +18,14 @@ baz = Marc-Andr\202
     """
 
     def basic_tests(self, s, strable):
-        f = six.StringIO(s)
+        f = StringIO(s)
         i = ini.INIConfig(f)
-        self.assertEqual(six.text_type(i), s)
-        self.assertEqual(type(i.foo.bar), six.text_type)
+        self.assertEqual(str(i), s)
+        self.assertEqual(type(i.foo.bar), str)
         if strable:
             self.assertEqual(str(i), str(s))
         else:
-            self.assertRaises(UnicodeEncodeError, lambda: six.text_type(i).encode('ascii'))
+            self.assertRaises(UnicodeEncodeError, lambda: str(i).encode('ascii'))
         return i
 
     def test_ascii(self):

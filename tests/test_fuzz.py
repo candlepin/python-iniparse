@@ -3,8 +3,8 @@ import os
 import random
 import sys
 import unittest
-from six import StringIO
-from six.moves import configparser
+from io import StringIO
+import configparser
 from iniparse import compat, ini, tidy
 
 # TODO:

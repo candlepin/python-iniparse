@@ -1,16 +1,12 @@
 from iniparse import compat as ConfigParser
-from six import StringIO
+from io import StringIO
 try:
     import UserDict
 except ImportError:
     import collections as UserDict
 import unittest
 
-import sys
-if sys.version_info[0] < 3:
-    from test import test_support
-else:
-    from test import support as test_support
+from test import support as test_support
 
 
 class SortedDict(UserDict.UserDict):
@@ -264,13 +260,6 @@ class TestCaseBase(unittest.TestCase):
         cf.set("sect", "option1", mystr("splat"))
         cf.set("sect", "option2", "splat")
         cf.set("sect", "option2", mystr("splat"))
-        try:
-            unicode
-        except NameError:
-            pass
-        else:
-            cf.set("sect", "option1", unicode("splat"))
-            cf.set("sect", "option2", unicode("splat"))
 
     def test_read_returns_file_list(self):
         file1 = test_support.findfile("cfgparser.1")

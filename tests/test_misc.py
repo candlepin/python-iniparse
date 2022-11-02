@@ -1,8 +1,8 @@
 import re
 import unittest
 import pickle
-from six.moves import configparser
-from six import StringIO
+import configparser
+from io import StringIO
 from textwrap import dedent
 from iniparse import compat, ini
 

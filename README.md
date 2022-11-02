@@ -1,8 +1,6 @@
 Introduction to iniparse
 ------------------------
 
-[![Build Status](https://travis-ci.org/candlepin/python-iniparse.svg?branch=master)](https://travis-ci.org/candlepin/python-iniparse)
-
 iniparse is a INI parser for Python which is:
 
 * Compatible with ConfigParser: Backward compatible implementations

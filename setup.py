@@ -35,7 +35,6 @@ use.''',
         'Topic :: Software Development :: Libraries :: Python Modules',
       ],
       packages = ['iniparse'],
-      install_requires=['six'],
       data_files = [
         ('share/doc/iniparse-%s' % VERSION, ['README.md', 'LICENSE-PSF',
                                              'LICENSE', 'Changelog',
