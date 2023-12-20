@@ -1,3 +1,4 @@
+import os
 from iniparse import compat as ConfigParser
 from io import StringIO
 try:
@@ -263,6 +264,8 @@ class TestCaseBase(unittest.TestCase):
 
     def test_read_returns_file_list(self):
         file1 = test_support.findfile("cfgparser.1")
+        if not os.path.exists(file1):
+            file1 = test_support.findfile("configdata/cfgparser.1")
         # check when we pass a mix of readable and non-readable files:
         cf = self.newconfig()
         parsed_files = cf.read([file1, "nonexistant-file"])
