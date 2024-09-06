@@ -130,10 +130,3 @@ class TestFuzz(unittest.TestCase):
 
     def assertEqualSorted(self, l1, l2):
         self.assertEqual(sorted(l1), sorted(l2))
-
-
-class Suite(unittest.TestSuite):
-    def __init__(self):
-        unittest.TestSuite.__init__(self, [
-                unittest.makeSuite(TestFuzz, 'test'),
-        ])

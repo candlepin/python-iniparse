@@ -26,13 +26,3 @@ class TestIni(unittest.TestCase):
         p = Process(target=getxy, args=(q, w))
         p.start()
         self.assertEqual(w.get(timeout=1), '42')
-
-
-class Suite(unittest.TestSuite):
-    def __init__(self):
-        if disabled:
-            unittest.TestSuite.__init__(self, [])
-        else:
-            unittest.TestSuite.__init__(self, [
-                    unittest.makeSuite(TestIni, 'test'),
-            ])

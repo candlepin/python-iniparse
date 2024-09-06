@@ -41,10 +41,3 @@ baz = Marc-Andr\202
         i = self.basic_tests(self.s2, strable=False)
         self.assertEqual(i.foo.bar, 'mammal')
         self.assertEqual(i.foo.baz, u'Marc-Andr\202')
-
-
-class Suite(unittest.TestSuite):
-    def __init__(self):
-        unittest.TestSuite.__init__(self, [
-                unittest.makeSuite(TestUnicode, 'test'),
-    ])

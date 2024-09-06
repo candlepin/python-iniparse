@@ -127,10 +127,3 @@ class TestTidy(unittest.TestCase):
 
             c=3
             """))
-
-
-class Suite(unittest.TestSuite):
-    def __init__(self):
-        unittest.TestSuite.__init__(self, [
-                unittest.makeSuite(TestTidy, 'test'),
-    ])

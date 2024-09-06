@@ -408,14 +408,3 @@ another = baz
         ip.section.option = '\n'.join(['', '', '', 'foo', '', '', ''])
         ip.section.another = 'baz'
         self.assertEqual(str(ip), self.s6)
-
-
-class Suite(unittest.TestSuite):
-    def __init__(self):
-        unittest.TestSuite.__init__(self, [
-                unittest.makeSuite(TestSectionLine, 'test'),
-                unittest.makeSuite(TestOptionLine, 'test'),
-                unittest.makeSuite(TestCommentLine, 'test'),
-                unittest.makeSuite(TestOtherLines, 'test'),
-                unittest.makeSuite(TestIni, 'test'),
-        ])
