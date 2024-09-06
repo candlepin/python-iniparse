@@ -452,17 +452,3 @@ class TestCommentSyntax(unittest.TestCase):
 
     def tearDown(self):
         ini.change_comment_syntax(';#', True)
-
-
-class Suite(unittest.TestSuite):
-    def __init__(self):
-        unittest.TestSuite.__init__(self, [
-                unittest.makeSuite(TestOptionxFormOverride, 'test'),
-                unittest.makeSuite(TestReadline, 'test'),
-                unittest.makeSuite(TestMultilineWithComments, 'test'),
-                unittest.makeSuite(TestEmptyFile, 'test'),
-                unittest.makeSuite(TestCustomDict, 'test'),
-                unittest.makeSuite(TestCompat, 'test'),
-                unittest.makeSuite(TestPickle, 'test'),
-                unittest.makeSuite(TestCommentSyntax, 'test'),
-    ])
