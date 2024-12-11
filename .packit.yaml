@@ -4,7 +4,7 @@
 specfile_path: python-iniparse.spec
 
 # add or remove files that should be synced
-synced_files:
+files_to_sync:
     - python-iniparse.spec
     - .packit.yaml
 
