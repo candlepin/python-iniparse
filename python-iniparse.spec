@@ -4,7 +4,7 @@
 %global _docdir_fmt %{name}
 
 Name:           python-%{modname}
-Version:        0.5
+Version:        0.5.1
 Release:        1%{?dist}
 Summary:        Python Module for Accessing and Modifying Configuration Data in INI files
 License:        MIT and Python
