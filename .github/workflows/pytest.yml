@@ -1,0 +1,44 @@
+name: pytest
+
+on:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    # at 5:00 every 1st of the month
+    - cron: 0 5 1 * *
+
+jobs:
+  pytest:
+    name: "pytest"
+
+    permissions:
+      issues: write
+      pull-requests: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: "CentOS Stream 10"
+            image: "quay.io/centos/centos:stream10"
+          - name: "Fedora latest"
+            image: "fedora:latest"
+          - name: "Fedora Rawhide"
+            image: "fedora:rawhide"
+
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ matrix.image }}
+
+    steps:
+      - name: "Checkout repository"
+        uses: actions/checkout@v4
+
+      - name: "Run container-pre-test.sh"
+        run: |
+          bash scripts/container-pre-test.sh
+
+      - name: "Run pytest"
+        env:
+          PYTEST_ADDOPTS: "--color=yes --code-highlight=yes --showlocals"
+        run: python3 -m pytest ${{ matrix.pytest_args }}
