@@ -1,0 +1,29 @@
+---
+name: Test Docstrings Validation
+
+on:
+  pull_request:
+    paths:
+      - "tests/**"
+
+jobs:
+  betelgeuse:
+    name: "betelgeuse dry-run"
+    runs-on: ubuntu-latest
+    container:
+      image: fedora:latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Base setup for Betelgeuse
+        run: |
+          dnf --setopt install_weak_deps=False install -y \
+              python3-pip
+          python3 -m pip install betelgeuse
+
+      - name: Run Betelgeuse
+        run: |
+          PYTHONPATH=tests/ betelgeuse --config-module \
+            custom_betelgeuse_config test-case --dry-run \
+            tests/ dryrun_project ./test_case.xml
