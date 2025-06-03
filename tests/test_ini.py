@@ -51,7 +51,7 @@ class TestSectionLine(unittest.TestCase):
 
     lines = [
         ('[section]',          ('section', None, None, -1)),
-        ('[se\ct%[ion\t]',     ('se\ct%[ion\t', None, None, -1)),
+        (r'[se\ct%[ion\t]',     (r'se\ct%[ion\t', None, None, -1)),
         ('[sec tion]  ; hi',   ('sec tion', ' hi', ';', 12)),
         ('[section]  #oops!',  ('section', 'oops!', '#', 11)),
         ('[section]   ;  ',    ('section', '', ';', 12)),
