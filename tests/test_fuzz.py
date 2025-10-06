@@ -66,7 +66,7 @@ def random_ini_file():
         elif x < 0.7:
             # option
             name = random_string()
-            name = re.sub(':|=| |\[', '', name)
+            name = re.sub(r':|=| |\[', '', name)
             sep = random.choice([':', '='])
             l = name + random_space() + sep + random_space() + random_string()
             if random.randint(0,1):
