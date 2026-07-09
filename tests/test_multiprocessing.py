@@ -59,7 +59,7 @@ class TestIni(unittest.TestCase):
             6. The main process retrieves the correct value from queue `w` and matches it against expected result.
         """
         def getxy(_q, _w):
-            _cfg = _q.get_nowait()
+            _cfg = _q.get(timeout=5)
             _w.put(_cfg.x.y)
         cfg = ini.INIConfig()
         cfg.x.y = '42'
