@@ -10,6 +10,8 @@
 """
 
 import os
+import shutil
+import tempfile
 from iniparse import compat as ConfigParser
 from io import StringIO
 try:
@@ -17,8 +19,6 @@ try:
 except ImportError:
     import collections as UserDict
 import unittest
-
-from test import support as test_support
 
 
 class SortedDict(UserDict.UserDict):
@@ -466,9 +466,13 @@ class TestCaseBase(unittest.TestCase):
             3. Empty list is returned due to file not existing.
             4. Empty list is returned since no files were passed.
         """
-        file1 = test_support.findfile("cfgparser.1")
-        if not os.path.exists(file1):
-            file1 = test_support.findfile("configdata/cfgparser.1")
+        # Do not depend on the data files of CPython's 'test' package,
+        # which is not installed on many systems.
+        tmpdir = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, tmpdir)
+        file1 = os.path.join(tmpdir, "cfgparser.1")
+        with open(file1, "w") as f:
+            f.write("[Foo Bar]\nfoo=newbar\n")
         # check when we pass a mix of readable and non-readable files:
         cf = self.newconfig()
         parsed_files = cf.read([file1, "nonexistent-file"])
