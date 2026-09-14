@@ -355,7 +355,10 @@ class INISection(config.ConfigNamespace):
     _defaults: Optional["INISection"] = None
     _optionxformvalue: "INIConfig" = None
     _optionxformsource: "INIConfig" = None
-    _compat_skip_empty_lines: Set[str] = set()
+    # The real set is created per instance in __init__().  The immutable
+    # class-level value only makes ConfigNamespace.__setattr__ treat the
+    # name as a member; a mutable set here would be shared by all sections.
+    _compat_skip_empty_lines: Set[str] = frozenset()  # type: ignore[assignment]
 
     def __init__(
         self,
@@ -369,6 +372,7 @@ class INISection(config.ConfigNamespace):
         self._optionxformvalue = optionxformvalue
         self._optionxformsource = optionxformsource
         self._options = {}
+        self._compat_skip_empty_lines = set()
 
     _optionxform = _make_xform_property('_optionxform')
 
