@@ -232,3 +232,26 @@ class TestTidy(unittest.TestCase):
 
             c=3
             """))
+
+    def test_first_section_is_tidied(self):
+        """
+        :id: dce50a4b-cb18-4bf7-bf7a-d0260cac1162
+        :title: tidy() cleans up a section at the start of the file
+        :description:
+            Verifies that tidy() collapses consecutive empty lines in the
+            first section even when the file starts directly with a
+            section header.
+        :tags: Tier 2
+        :steps:
+            1. Parse a file starting with `[a]` whose options are separated
+               by several empty lines, followed by a similar section `[b]`.
+            2. Call tidy() and render the configuration.
+        :expectedresults:
+            1. File is parsed.
+            2. Both sections contain only single empty lines.
+        """
+        cfg = INIConfig(StringIO('[a]\nx = 1\n\n\n\ny = 2\n\n'
+                                 '[b]\nz = 3\n\n\n\nw = 4\n'))
+        tidy(cfg)
+        self.assertEqual(str(cfg), '[a]\nx = 1\n\ny = 2\n\n'
+                                   '[b]\nz = 3\n\nw = 4\n')
