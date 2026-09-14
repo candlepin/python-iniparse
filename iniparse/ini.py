@@ -1,9 +1,9 @@
 """Access and/or modify INI files
 
-* Compatiable with ConfigParser
+* Compatible with ConfigParser
 * Preserves order of sections & options
 * Preserves comments/blank lines/etc
-* More conveninet access to data
+* More convenient access to data
 
 Example:
 

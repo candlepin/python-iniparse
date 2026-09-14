@@ -137,11 +137,11 @@ class TestCaseBase(unittest.TestCase):
         # Make sure the right things happen for remove_option();
         # added to include check for SourceForge bug #123324:
         self.assertTrue(cf.remove_option('Foo Bar', 'foo'),
-                        "remove_option() failed to report existance of option")
+                        "remove_option() failed to report existence of option")
         self.assertFalse(cf.has_option('Foo Bar', 'foo'),
                     "remove_option() failed to remove option")
         self.assertFalse(cf.remove_option('Foo Bar', 'foo'),
-                    "remove_option() failed to report non-existance of option"
+                    "remove_option() failed to report non-existence of option"
                     " that was removed")
 
         self.assertRaises(ConfigParser.NoSectionError,
@@ -471,7 +471,7 @@ class TestCaseBase(unittest.TestCase):
             file1 = test_support.findfile("configdata/cfgparser.1")
         # check when we pass a mix of readable and non-readable files:
         cf = self.newconfig()
-        parsed_files = cf.read([file1, "nonexistant-file"])
+        parsed_files = cf.read([file1, "nonexistent-file"])
         self.assertEqual(parsed_files, [file1])
         self.assertEqual(cf.get("Foo Bar", "foo"), "newbar")
         # check when we pass only a filename:
@@ -481,7 +481,7 @@ class TestCaseBase(unittest.TestCase):
         self.assertEqual(cf.get("Foo Bar", "foo"), "newbar")
         # check when we pass only missing files:
         cf = self.newconfig()
-        parsed_files = cf.read(["nonexistant-file"])
+        parsed_files = cf.read(["nonexistent-file"])
         self.assertEqual(parsed_files, [])
         # check when we pass no files:
         cf = self.newconfig()

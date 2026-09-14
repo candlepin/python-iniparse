@@ -77,7 +77,7 @@ class TestOptionxFormOverride(unittest.TestCase):
         self.assertEqual(c.get('foo', 'bar'), 'a')
         self.assertEqual(c.get('foo', 'Bar'), 'b')
 
-    def test_dyanamic(self):
+    def test_dynamic(self):
         """
         :id: 30b18b29-2e11-43e1-9615-2739021c4910
         :title: Dynamically changing optionxform affects key resolution

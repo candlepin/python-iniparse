@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 def tidy(cfg: compat.RawConfigParser):
     """Clean up blank lines.
 
-    This functions makes the configuration look clean and
+    This function makes the configuration look clean and
     handwritten - consecutive empty lines and empty lines at
     the start of the file are removed, and one is guaranteed
     to be at the end of the file.
