@@ -23,7 +23,7 @@ class ConfigNamespace:
     # Methods that must be implemented by subclasses
 
     def _getitem(self, key: str) -> object:
-        return NotImplementedError(key)
+        raise NotImplementedError(key)
 
     def __setitem__(self, key: str, value: object):
         raise NotImplementedError(key, value)
@@ -32,8 +32,7 @@ class ConfigNamespace:
         raise NotImplementedError(key)
 
     def __iter__(self) -> Iterable[str]:
-        # FIXME Raise instead return
-        return NotImplementedError()
+        raise NotImplementedError()
 
     def _new_namespace(self, name: str) -> "ConfigNamespace":
         raise NotImplementedError(name)

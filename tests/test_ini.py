@@ -833,3 +833,25 @@ another = baz
         ip.section.option = '\n'.join(['', '', '', 'foo', '', '', ''])
         ip.section.another = 'baz'
         self.assertEqual(str(ip), self.s6)
+
+
+class TestConfigNamespaceAbstract(unittest.TestCase):
+    def test_abstract_methods_raise(self):
+        """
+        :id: 855cbd60-05d1-449f-91c0-d77a8dfa2e59
+        :title: Abstract ConfigNamespace methods raise NotImplementedError
+        :description:
+            Verifies that the abstract _getitem() and __iter__() methods of
+            ConfigNamespace raise NotImplementedError instead of returning
+            the exception object (which made `key in ns` always True).
+        :tags: Tier 3
+        :steps:
+            1. Create a bare ConfigNamespace.
+            2. Check membership and iterate over it.
+        :expectedresults:
+            1. Object is created.
+            2. NotImplementedError is raised in both cases.
+        """
+        ns = config.ConfigNamespace()
+        self.assertRaises(NotImplementedError, lambda: 'key' in ns)
+        self.assertRaises(NotImplementedError, iter, ns)
