@@ -15,6 +15,12 @@ upstream_package_name: python-iniparse
 # downstream (Fedora) RPM package name
 downstream_package_name: python-iniparse
 
+# Default is the latest git tag (still 0.5.1). Read setup.py so PR builds of a
+# version bump match the egg-info directory Packit installs.
+actions:
+  get-current-version:
+    - python3 -c "import re; print(re.search(r'^VERSION = \"(.+)\"', open('setup.py').read(), re.M).group(1))"
+
 jobs:
 - job: copr_build
   trigger: pull_request

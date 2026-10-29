@@ -4,7 +4,7 @@
 %global _docdir_fmt %{name}
 
 Name:           python-%{modname}
-Version:        0.5.1
+Version:        0.5.2
 Release:        1%{?dist}
 Summary:        Python Module for Accessing and Modifying Configuration Data in INI files
 License:        MIT and Python
@@ -51,11 +51,18 @@ rm -vfr %{buildroot}%{_docdir}/*
 %license LICENSE LICENSE-PSF
 %doc README.md Changelog html/
 %{python3_sitelib}/%{modname}/
-%{python3_sitelib}/%{modname}-%{version}-*.egg-info/
+%{python3_sitelib}/%{modname}-*.egg-info/
 
 
 
 %changelog
+* Thu Oct 29 2026 Zdenek Petracek <zpetrace@redhat.com> - 0.5.2-1
+- Release 0.5.2
+- tidy() also cleans the first section
+- ConfigNamespace abstract methods raise NotImplementedError
+- _compat_skip_empty_lines is per-instance
+- Avoid multiprocessing forkserver on Python 3.14+
+- Tests no longer require CPython's test package
 * Tue May 18 2021 Jiri Hnidek <jhnidek@redhat.com> - 0.5-1
 - Release 0.5
 - Moved project to https://github.com/candlepin/python-iniparse
