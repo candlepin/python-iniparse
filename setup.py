@@ -2,7 +2,7 @@
 
 from setuptools import setup
 
-VERSION = "0.5.2"
+VERSION = "0.5.3"
 
 setup(
     name="iniparse",
@@ -26,9 +26,6 @@ use.""",
         "Operating System :: OS Independent",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
@@ -38,6 +35,7 @@ use.""",
         "Programming Language :: Python :: 3.15",
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
+    python_requires=">=3.9",
     packages=["iniparse"],
     data_files=[
         (
