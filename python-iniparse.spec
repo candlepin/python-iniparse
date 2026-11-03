@@ -4,7 +4,7 @@
 %global _docdir_fmt %{name}
 
 Name:           python-%{modname}
-Version:        0.5.2
+Version:        0.5.3
 Release:        1%{?dist}
 Summary:        Python Module for Accessing and Modifying Configuration Data in INI files
 License:        MIT and Python
@@ -56,6 +56,9 @@ rm -vfr %{buildroot}%{_docdir}/*
 
 
 %changelog
+* Tue Nov 3 2026 Zdenek Petracek <zpetrace@redhat.com> - 0.5.3-1
+- Release 0.5.3
+- Remove Python 3.6 Classifier
 * Thu Oct 29 2026 Zdenek Petracek <zpetrace@redhat.com> - 0.5.2-1
 - Release 0.5.2
 - tidy() also cleans the first section
